@@ -1,23 +1,23 @@
 const SITE_CONFIG = {
   name: "Westbrook County",
-  tagline: "A UK-inspired Roblox emergency services community.",
+  tagline: "A US-inspired Roblox emergency services simulator/roleplay game.",
   releaseAt: "2026-10-02T21:00:00+01:00",
   countdownHideAfterHours: 24,
   links: {
-    roblox: "#",
-    discord: "#",
+    roblox: "https://www.roblox.com/games/86179625322199/Emergency-Westbrook-County",
+    discord: "https://discord.gg/zpcBKQbGvM",
     liveries: "https://drive.google.com/drive/folders/1kCMe5aeZxmL3Q7lu4uaWUpoiIakj2CPE?usp=sharing"
   },
   hero: {
-    eyebrow: "WESTBROOK COUNTY",
-    title: "Welcome to Westbrook.",
-    text: "A new county. New services. Your role.",
+    eyebrow: "Emergency: westbrook county",
+    title: "Welcome to Westbrook County.",
+    text: "Alpha PAid Access coming October 2nd 2026",
     buttonText: "View updates",
     buttonLink: "pages/updates.html"
   },
   highlights: [
-    {title:"Emergency Services",text:"Play as part of the services that keep Westbrook moving."},
-    {title:"County Roleplay",text:"A shared map built for civilian and emergency-service roleplay."},
-    {title:"Community Led",text:"Suggestions, updates and new content shaped around the community."}
+    {title:"Law Enforcement",text:"Help enforce the law across the county. There are 2 department options. Police and sheriff."},
+    {title:"Fire Department",text:"Help fight fires across the county and keep everyone safe."},
+    {title:"Department OF Transportation (DOT)",text:"Help fix issues, fix and tow vehicles and more!"}
   ]
 };
