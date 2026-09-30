@@ -1,1 +1,0 @@
-Place update pictures in this folder and reference them from updates.js.
