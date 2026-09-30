@@ -8,17 +8,10 @@
 
 const UPDATES = [
   {
-    date: "30 September 2026",
-    title: "Website launch",
-    text: "The new Westbrook County website is now online. It will be used for release information, development updates and community resources.",
+    date: "2nd October 2026",
+    title: "Alpha PAid Access Release",
+    text: "As we release this game, we will continue to work on more incomplete features. This is our new website to help share information and bring upcoming features!",
     image: "",
-    tag: "Website"
+    tag: "Release & Website"
   },
-  {
-    date: "28 September 2026",
-    title: "Release date announced",
-    text: "Westbrook County is scheduled to release on 2 October 2026 at 9:00 PM.",
-    image: "",
-    tag: "Release"
-  }
 ];
