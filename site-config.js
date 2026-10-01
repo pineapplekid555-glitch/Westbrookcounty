@@ -1,6 +1,6 @@
 const SITE_CONFIG = {
   name: "Westbrook County",
-  tagline: "A UK-inspired Roblox emergency services community.",
+  tagline: "A US-inspired Roblox emergency services simulator.",
 
   // 2 October 2026 at 9:00 PM London time.
   // Keep the +01:00 offset for this release date.
@@ -17,7 +17,7 @@ const SITE_CONFIG = {
 
   hero: {
     eyebrow: "WESTBROOK COUNTY",
-    title: "Welcome to Westbrook.",
+    title: "Welcome to Westbrook County.",
     text: "A new county. New services. Your role.",
     buttonText: "View updates",
     buttonLink: "pages/updates.html"
