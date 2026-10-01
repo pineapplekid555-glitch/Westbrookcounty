@@ -1,0 +1,3 @@
+Put update images in this folder.
+Then reference them from updates.js like:
+image: "assets/images/my-picture.jpg"

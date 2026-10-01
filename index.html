@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b0e">
+  <meta name="description" content="Westbrook County — emergency services and county roleplay community.">
+  <link rel="icon" type="image/png" href="assets/images/logo.png">
+  <title>Westbrook County</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html" aria-label="Westbrook County home">
+      <img class="brand-logo" src="assets/images/logo.png" alt="Westbrook County logo">
+      <span data-site-name>Westbrook County</span>
+    </a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Open navigation">Menu</button>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a class="active" href="index.html">Home</a>
+      <a href="pages/updates.html">Updates</a>
+      <a href="pages/liveries.html">Custom Liveries</a>
+      <a class="nav-cta" data-roblox-link href="#">Play</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <img class="hero-logo" src="assets/images/logo.png" alt="" aria-hidden="true">
+    <div class="container hero-content">
+      <div class="eyebrow" data-hero-eyebrow>WESTBROOK COUNTY</div>
+      <h1 data-hero-title>Welcome to Westbrook.</h1>
+      <p data-hero-text>Emergency services, county roleplay and a community-built experience.</p>
+      <a class="button" data-hero-button href="pages/updates.html">View updates</a>
+    </div>
+  </section>
+
+  <section class="countdown" data-countdown aria-label="Release countdown">
+    <div class="container countdown-inner">
+      <div>
+        <div class="countdown-title">Release countdown</div>
+        <div class="countdown-subtitle">Westbrook County</div>
+      </div>
+      <div class="timer" aria-live="polite">
+        <div class="time-box"><div class="time-number" data-days>00</div><span class="time-label">Days</span></div>
+        <div class="time-box"><div class="time-number" data-hours>00</div><span class="time-label">Hours</span></div>
+        <div class="time-box"><div class="time-number" data-minutes>00</div><span class="time-label">Minutes</span></div>
+        <div class="time-box"><div class="time-number" data-seconds>00</div><span class="time-label">Seconds</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-heading">
+        <h2>The county</h2>
+        <p>Everything you need to know about Westbrook County, in one place.</p>
+      </div>
+      <div class="info-grid" data-highlights></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="section-heading">
+        <h2>Latest</h2>
+        <p>Development news and important changes from the team.</p>
+      </div>
+      <div class="latest-list" data-updates data-limit="3"></div>
+      <div style="margin-top:22px"><a class="button secondary" href="pages/updates.html">View all updates</a></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© <span data-year></span> <span data-footer-name>Westbrook County</span></span>
+    <div class="footer-links">
+      <a data-discord-link href="#">Discord</a>
+      <a data-roblox-link href="#">Roblox</a>
+    </div>
+  </div>
+</footer>
+
+<script src="site-config.js"></script>
+<script src="updates.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
