@@ -1,0 +1,6 @@
+Put update images in this folder.
+
+Then set the image path in updates.js, for example:
+image: "assets/images/my-update.jpg"
+
+Images on the Updates page are optional.
