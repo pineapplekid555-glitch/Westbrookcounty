@@ -1,5 +1,3 @@
-const ALLOWED_METHODS = ["GET", "POST"];
-
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -20,54 +18,91 @@ async function getAssetPreview(assetId) {
       encodeURIComponent(assetId) +
       "&returnPolicy=PlaceHolder&size=420x420&format=Png&isCircular=false"
   );
+
   if (!r.ok) throw new Error("Roblox thumbnail request failed");
+
   const data = await r.json();
   const item = data.data?.[0];
+
   if (!item?.imageUrl) throw new Error("Roblox asset thumbnail unavailable");
+
   return item.imageUrl;
 }
 
 export async function onRequestGet(context) {
   const id = new URL(context.request.url).searchParams.get("id");
+
   if (id) {
-    if (!validId(id)) return json({ success:false, error:"Invalid Roblox asset ID." }, 400);
+    if (!validId(id)) {
+      return json({ success: false, error: "Invalid Roblox asset ID." }, 400);
+    }
+
     try {
       const imageUrl = await getAssetPreview(id);
-      return json({ success:true, assetId:id, imageUrl, status:"pending_review" });
+      return json({
+        success: true,
+        assetId: id,
+        imageUrl
+      });
     } catch {
-      return json({ success:false, error:"Unable to retrieve that Roblox asset." }, 404);
+      return json({
+        success: false,
+        error: "Unable to retrieve that Roblox asset."
+      }, 404);
     }
   }
 
   return json({
     success: true,
-    message: "Livery submissions require an asset ID and are awaiting AI review.",
     submissions: []
   });
 }
 
 export async function onRequestPost(context) {
   let body;
-  try { body = await context.request.json(); } catch {
-    return json({ success:false, error:"Invalid JSON." }, 400);
+
+  try {
+    body = await context.request.json();
+  } catch {
+    return json({ success: false, error: "Invalid JSON." }, 400);
   }
 
-  const assetId = String(body.assetId || "").trim();
   const playerName = String(body.playerName || "").trim().slice(0, 50);
+  const vehicleName = String(body.vehicleName || "").trim().slice(0, 80);
+  const surfaces = body.surfaces || {};
 
-  if (!validId(assetId)) {
-    return json({ success:false, error:"Enter a valid Roblox texture/decal ID." }, 400);
+  const required = ["left", "right", "front", "back", "top"];
+
+  for (const surface of required) {
+    if (!validId(surfaces[surface])) {
+      return json({
+        success: false,
+        error: "A valid Roblox texture/decal ID is required for " + surface + "."
+      }, 400);
+    }
   }
 
   try {
-    const imageUrl = await getAssetPreview(assetId);
+    const previews = {};
+
+    for (const surface of required) {
+      previews[surface] = await getAssetPreview(String(surfaces[surface]));
+    }
+
     return json({
       success: true,
       submission: {
         id: crypto.randomUUID(),
-        assetId,
         playerName,
-        imageUrl,
+        vehicleName,
+        surfaces: {
+          left: String(surfaces.left),
+          right: String(surfaces.right),
+          front: String(surfaces.front),
+          back: String(surfaces.back),
+          top: String(surfaces.top)
+        },
+        previews,
         status: "pending_review",
         aiRecommendation: null,
         aiConfidence: null,
@@ -75,6 +110,9 @@ export async function onRequestPost(context) {
       }
     }, 202);
   } catch {
-    return json({ success:false, error:"That Roblox asset could not be previewed." }, 404);
+    return json({
+      success: false,
+      error: "One or more Roblox assets could not be previewed."
+    }, 404);
   }
 }
