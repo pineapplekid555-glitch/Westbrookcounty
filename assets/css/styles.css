@@ -560,3 +560,51 @@ a {
         align-items: flex-start;
     }
 }
+/* FINAL COUNTDOWN RIBBON FIX */
+
+.countdown-ribbon {
+    display: block !important;
+    width: 100% !important;
+    min-height: 54px !important;
+    background: var(--yellow) !important;
+    color: #111 !important;
+    text-decoration: none !important;
+    border-bottom: 3px solid #9f7515 !important;
+}
+
+.countdown-ribbon-inner {
+    width: min(1180px, calc(100% - 40px)) !important;
+    min-height: 54px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.ribbon-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 18px !important;
+}
+
+.ribbon-countdown {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+}
+
+.ribbon-unit {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 4px !important;
+}
+
+.ribbon-arrow {
+    display: block !important;
+}
+
+@media (max-width: 700px) {
+    .countdown-ribbon-inner {
+        width: calc(100% - 28px) !important;
+    }
+}
