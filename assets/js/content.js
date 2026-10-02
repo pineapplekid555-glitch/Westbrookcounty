@@ -15,8 +15,8 @@ window.WESTBROOK = {
   robloxUniverseId: "",
 
   links: {
-    roblox: "#",
-    discord: "#",
+    roblox: "https://www.roblox.com/share/g/36039454",
+    discord: "https://discord.gg/eNjfEsSKTX",
     liveries: "https://drive.google.com/drive/folders/1kCMe5aeZxmL3Q7lu4uaWUpoiIakj2CPE?usp=sharing"
   },
 
@@ -28,13 +28,13 @@ window.WESTBROOK = {
   features: [
     {
       number: "01",
-      title: "Emergency Services",
-      text: "Build your role around police, fire, EMS and the wider county."
+      title: "Law Enforcement",
+      text: "Help enforce the law around the county. Cach criminals and have fun."
     },
     {
       number: "02",
-      title: "County Roleplay",
-      text: "A shared map designed for civilian and emergency-service scenarios."
+      title: "Fire",
+      text: "Help put out fires, or be EMS and make the county safe."
     },
     {
       number: "03",
