@@ -43,9 +43,7 @@ img {
     margin: 0 auto;
 }
 
-/* =========================
-   HEADER
-========================= */
+/* HEADER */
 
 .site-header {
     height: 72px;
@@ -110,9 +108,7 @@ img {
     cursor: pointer;
 }
 
-/* =========================
-   COUNTDOWN RIBBON
-========================= */
+/* COUNTDOWN RIBBON */
 
 .countdown-ribbon {
     background: var(--yellow);
@@ -170,9 +166,7 @@ img {
     font-weight: 900;
 }
 
-/* =========================
-   HERO
-========================= */
+/* HERO */
 
 .hero {
     min-height: 560px;
@@ -228,9 +222,7 @@ img {
     margin-top: 30px;
 }
 
-/* =========================
-   BUTTONS
-========================= */
+/* BUTTONS */
 
 .button {
     display: inline-flex;
@@ -263,9 +255,7 @@ img {
     border-color: var(--border);
 }
 
-/* =========================
-   GENERAL SECTIONS
-========================= */
+/* SECTIONS */
 
 .section {
     padding: 90px 0;
@@ -293,9 +283,7 @@ img {
     line-height: 1.6;
 }
 
-/* =========================
-   UPDATES
-========================= */
+/* UPDATES */
 
 .updates-list {
     display: flex;
@@ -362,9 +350,7 @@ img {
     color: var(--muted);
 }
 
-/* =========================
-   COUNTDOWN PAGE
-========================= */
+/* COUNTDOWN PAGE */
 
 .countdown-page {
     min-height: calc(100vh - 72px);
@@ -446,9 +432,7 @@ img {
     flex-wrap: wrap;
 }
 
-/* =========================
-   FOOTER
-========================= */
+/* FOOTER */
 
 .site-footer {
     border-top: 1px solid var(--border);
@@ -463,9 +447,7 @@ img {
     gap: 20px;
 }
 
-/* =========================
-   MOBILE
-========================= */
+/* MOBILE */
 
 @media (max-width: 700px) {
 
