@@ -1,117 +1,265 @@
-(() => {
-  "use strict";
-  const site = window.WESTBROOK || {};
-  const $ = (s, r=document) => r.querySelector(s);
-  const $$ = (s, r=document) => [...r.querySelectorAll(s)];
-  const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[c]));
+(function () {
+    "use strict";
 
-  function links() {
-    $$("[data-discord]").forEach(a => { a.href = site.links?.discord || "#"; });
-    $$("[data-roblox]").forEach(a => { a.href = site.links?.roblox || "#"; });
-    $$("[data-liveries]").forEach(a => { a.href = site.links?.liveries || "#"; });
-    $$("[data-year]").forEach(e => e.textContent = new Date().getFullYear());
-    const tagline = $("[data-tagline]");
-    if (tagline) tagline.textContent = site.tagline || "";
-  }
+    const content = window.WESTBROOK_CONTENT || {};
 
-  function nav() {
-    const button = $(".nav-toggle"), nav = $(".nav");
-    if (!button || !nav) return;
-    button.addEventListener("click", () => {
-      const open = nav.classList.toggle("open");
-      button.setAttribute("aria-expanded", String(open));
+    function $(selector) {
+        return document.querySelector(selector);
+    }
+
+    function createElement(tag, className, text) {
+        const element = document.createElement(tag);
+
+        if (className) {
+            element.className = className;
+        }
+
+        if (text !== undefined) {
+            element.textContent = text;
+        }
+
+        return element;
+    }
+
+    /* -------------------------
+       SITE CONTENT
+    ------------------------- */
+
+    function renderUpdates() {
+        const containers = document.querySelectorAll("[data-updates]");
+
+        containers.forEach(function (container) {
+            container.innerHTML = "";
+
+            const updates = content.updates || [];
+
+            if (!updates.length) {
+                container.appendChild(
+                    createElement(
+                        "p",
+                        "empty-message",
+                        "No updates have been posted yet."
+                    )
+                );
+                return;
+            }
+
+            updates.forEach(function (update) {
+                const article = createElement("article", "update-card");
+
+                const top = createElement("div", "update-top");
+
+                const tag = createElement(
+                    "span",
+                    "update-tag",
+                    update.tag || "Update"
+                );
+
+                const date = createElement(
+                    "span",
+                    "update-date",
+                    update.date || ""
+                );
+
+                top.appendChild(tag);
+                top.appendChild(date);
+
+                article.appendChild(top);
+
+                const title = createElement(
+                    "h3",
+                    "update-title",
+                    update.title || "Update"
+                );
+
+                article.appendChild(title);
+
+                if (update.image) {
+                    const image = document.createElement("img");
+
+                    image.src = update.image;
+                    image.alt = update.title || "Westbrook County update";
+                    image.className = "update-image";
+                    image.loading = "lazy";
+
+                    article.appendChild(image);
+                }
+
+                if (Array.isArray(update.items) && update.items.length) {
+                    const list = document.createElement("ul");
+                    list.className = "update-list";
+
+                    update.items.forEach(function (item) {
+                        const li = createElement("li", "", item);
+                        list.appendChild(li);
+                    });
+
+                    article.appendChild(list);
+                }
+
+                container.appendChild(article);
+            });
+        });
+    }
+
+    /* -------------------------
+       HERO
+    ------------------------- */
+
+    function renderSiteName() {
+        document.querySelectorAll("[data-site-name]").forEach(function (element) {
+            element.textContent = content.siteName || "Westbrook County";
+        });
+    }
+
+    function renderLinks() {
+        document.querySelectorAll("[data-discord]").forEach(function (element) {
+            element.href = content.discordUrl || "#";
+        });
+
+        document.querySelectorAll("[data-roblox]").forEach(function (element) {
+            element.href = content.robloxUrl || "#";
+        });
+    }
+
+    /* -------------------------
+       COUNTDOWN
+    ------------------------- */
+
+    const RELEASE_TIME = Date.parse("2026-10-02T20:00:00Z");
+    const HIDE_RIBBON_TIME = RELEASE_TIME + (24 * 60 * 60 * 1000);
+
+    function pad(number) {
+        return String(Math.max(0, number)).padStart(2, "0");
+    }
+
+    function updateCountdown() {
+        const now = Date.now();
+
+        const days = document.querySelector("[data-days]");
+        const hours = document.querySelector("[data-hours]");
+        const minutes = document.querySelector("[data-minutes]");
+        const seconds = document.querySelector("[data-seconds]");
+
+        const countdownElements = [
+            days,
+            hours,
+            minutes,
+            seconds
+        ];
+
+        const hasCountdown = countdownElements.some(Boolean);
+
+        if (!hasCountdown) {
+            return;
+        }
+
+        if (now < RELEASE_TIME) {
+            const difference = RELEASE_TIME - now;
+
+            const totalSeconds = Math.floor(difference / 1000);
+
+            const d = Math.floor(totalSeconds / 86400);
+            const h = Math.floor((totalSeconds % 86400) / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = totalSeconds % 60;
+
+            if (days) days.textContent = pad(d);
+            if (hours) hours.textContent = pad(h);
+            if (minutes) minutes.textContent = pad(m);
+            if (seconds) seconds.textContent = pad(s);
+
+            document.querySelectorAll("[data-release-status]").forEach(function (element) {
+                element.textContent = "COMING SOON";
+            });
+
+            return;
+        }
+
+        if (now < HIDE_RIBBON_TIME) {
+            if (days) days.textContent = "00";
+            if (hours) hours.textContent = "00";
+            if (minutes) minutes.textContent = "00";
+            if (seconds) seconds.textContent = "00";
+
+            document.querySelectorAll("[data-release-status]").forEach(function (element) {
+                element.textContent = "OUT NOW";
+            });
+
+            return;
+        }
+
+        document.querySelectorAll("[data-countdown-ribbon]").forEach(function (element) {
+            element.remove();
+        });
+
+        document.querySelectorAll("[data-countdown-page]").forEach(function (element) {
+            const message = createElement(
+                "div",
+                "release-finished",
+                "Westbrook County is now live."
+            );
+
+            element.innerHTML = "";
+            element.appendChild(message);
+        });
+    }
+
+    function startCountdown() {
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
+
+    /* -------------------------
+       COUNTDOWN RIBBON
+    ------------------------- */
+
+    function setupRibbon() {
+        const ribbon = document.querySelector("[data-countdown-ribbon]");
+
+        if (!ribbon) {
+            return;
+        }
+
+        const now = Date.now();
+
+        if (now >= HIDE_RIBBON_TIME) {
+            ribbon.remove();
+            return;
+        }
+
+        ribbon.addEventListener("click", function () {
+            window.location.href = "/pages/countdown.html";
+        });
+    }
+
+    /* -------------------------
+       MOBILE MENU
+    ------------------------- */
+
+    function setupMobileMenu() {
+        const button = document.querySelector("[data-menu-button]");
+        const nav = document.querySelector("[data-navigation]");
+
+        if (!button || !nav) {
+            return;
+        }
+
+        button.addEventListener("click", function () {
+            nav.classList.toggle("open");
+        });
+    }
+
+    /* -------------------------
+       START
+    ------------------------- */
+
+    document.addEventListener("DOMContentLoaded", function () {
+        renderSiteName();
+        renderLinks();
+        renderUpdates();
+        setupRibbon();
+        setupMobileMenu();
+        startCountdown();
     });
-    $$("[data-nav]").forEach(a => {
-      const target = new URL(a.href, location.href).pathname.replace(/\/+$/, "") || "/";
-      const here = location.pathname.replace(/\/+$/, "") || "/";
-      if (target === here) a.classList.add("active");
-    });
-  }
-
-  function features() {
-    const box = $("[data-features]");
-    if (!box) return;
-    box.innerHTML = (site.features || []).map(x => `
-      <article class="feature-card">
-        <span>${esc(x.number)}</span>
-        <h3>${esc(x.title)}</h3>
-        <p>${esc(x.text)}</p>
-      </article>`).join("");
-  }
-
-  function updates() {
-    const box = $("[data-updates]");
-    if (!box) return;
-    box.innerHTML = (site.updates || []).map(x => `
-      <article class="update">
-        ${x.image ? `<img src="${esc(x.image)}" alt="" loading="lazy">` : ""}
-        <div class="update-body">
-          <div class="update-meta"><span>${esc(x.date)}</span>${x.tag ? `<b>${esc(x.tag)}</b>` : ""}</div>
-          <h2>${esc(x.title)}</h2>
-          <ul>${(x.items || []).map(i => `<li>${esc(i)}</li>`).join("")}</ul>
-        </div>
-      </article>`).join("");
-  }
-
-  function countdown() {
-    const box = $("[data-countdown]");
-    if (!box || !site.releaseAt) return;
-    const release = Date.parse(site.releaseAt);
-    if (!Number.isFinite(release)) return;
-    const hideAt = release + (Number(site.countdownHideAfterHours) || 24) * 3600000;
-    const set = (s,v) => { const e=$(s,box); if(e)e.textContent=String(v).padStart(2,"0"); };
-
-    function tick() {
-      const now = Date.now();
-      if (now >= hideAt) { box.remove(); return; }
-      if (now >= release) {
-        box.innerHTML = `<div class="countdown-live"><span></span><strong>Westbrook County is live.</strong></div>`;
-        return;
-      }
-      const d = release-now;
-      set("[data-days]", Math.floor(d/86400000));
-      set("[data-hours]", Math.floor((d%86400000)/3600000));
-      set("[data-minutes]", Math.floor((d%3600000)/60000));
-      set("[data-seconds]", Math.floor((d%60000)/1000));
-    }
-    tick(); setInterval(tick,1000);
-  }
-
-  function formatNumber(value) {
-    if (typeof value !== "number") return "—";
-    if (value >= 1e9) return (value/1e9).toFixed(value >= 1e10 ? 0 : 1).replace(".0","") + "B";
-    if (value >= 1e6) return (value/1e6).toFixed(value >= 1e7 ? 0 : 1).replace(".0","") + "M";
-    if (value >= 1e3) return (value/1e3).toFixed(value >= 1e4 ? 0 : 1).replace(".0","") + "K";
-    return value.toLocaleString();
-  }
-
-  async function stats() {
-    const box = $("[data-stats]");
-    if (!box) return;
-    const id = String(site.robloxUniverseId || "").trim();
-    const note = $("[data-stats-note]");
-    if (!id) {
-      if (note) note.textContent = "Real Roblox stats will appear here after the Roblox universe ID is added to assets/js/content.js.";
-      return;
-    }
-    try {
-      const res = await fetch(`/api/stats?universeId=${encodeURIComponent(id)}`, {cache:"no-store"});
-      if (!res.ok) throw new Error("Stats request failed");
-      const s = await res.json();
-      box.innerHTML = `
-        <article class="stat-card"><span>PLAYING NOW</span><strong>${formatNumber(s.playing)}</strong><small>Players in-game</small></article>
-        <article class="stat-card"><span>TOTAL VISITS</span><strong>${formatNumber(s.visits)}</strong><small>Roblox visits</small></article>
-        <article class="stat-card"><span>LIKES</span><strong>${formatNumber(s.likes)}</strong><small>Roblox likes</small></article>
-        <article class="stat-card"><span>FAVOURITES</span><strong>${formatNumber(s.favorites)}</strong><small>Roblox favourites</small></article>`;
-      if (note) note.textContent = "Live data supplied by Roblox.";
-    } catch {
-      if (note) note.textContent = "Roblox stats could not be loaded right now.";
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    links(); nav(); features(); updates(); countdown(); stats();
-  });
 })();
