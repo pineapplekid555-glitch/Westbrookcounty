@@ -1,886 +1,273 @@
-:root {
-    --background: #080b0f;
-    --background-2: #0d1218;
-    --panel: #111820;
-    --border: #28333d;
-    --white: #f4f6f8;
-    --muted: #9da8b3;
-    --yellow: #f2b632;
-    --yellow-hover: #ffc94d;
-}
+/* =========================================
+   RELEASE PAGE
+   ========================================= */
 
-* {
-    box-sizing: border-box;
-}
-
-html,
-body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    min-height: 100%;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    background: var(--background);
-    color: var(--white);
-    font-family: Arial, Helvetica, sans-serif;
-    overflow-x: hidden;
-}
-
-a {
-    color: inherit;
-}
-
-/* =========================
-   CONTAINER
-========================= */
-
-.container {
-    width: min(1180px, calc(100% - 40px)) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-/* =========================
-   HEADER
-========================= */
-
-.site-header {
-    width: 100%;
-    height: 72px !important;
-    background: rgba(8, 11, 15, 0.98);
-    border-bottom: 1px solid var(--border);
-    position: relative;
-    z-index: 100;
-}
-
-.header-inner {
-    height: 72px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-}
-
-.brand {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px;
-    text-decoration: none;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-.brand img {
-    width: 42px !important;
-    height: 42px !important;
-    max-width: 42px !important;
-    max-height: 42px !important;
-    object-fit: contain !important;
-    display: block !important;
-}
-
-.navigation {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px;
-}
-
-.navigation a {
-    display: inline-flex !important;
-    align-items: center;
-    text-decoration: none;
-    color: var(--muted);
-    padding: 10px 14px;
-    border-radius: 6px;
-    font-size: 14px;
-    line-height: 1;
-}
-
-.navigation a:hover {
-    color: var(--white);
-    background: var(--panel);
-}
-
-.navigation .active {
-    background: var(--yellow);
-    color: #111;
-}
-
-.menu-button {
-    display: none !important;
-}
-
-/* =========================
-   COUNTDOWN RIBBON
-========================= */
-
-.countdown-ribbon {
-    width: 100%;
-    min-height: 54px !important;
-    background: var(--yellow);
-    color: #111;
-    border-bottom: 3px solid #9f7515;
-    cursor: pointer;
-}
-
-.countdown-ribbon-inner {
-    min-height: 51px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 20px;
-}
-
-.ribbon-title {
-    font-weight: 900;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-}
-
-.ribbon-right {
-    display: flex !important;
-    align-items: center !important;
-    gap: 18px;
-}
-
-.ribbon-countdown {
-    display: flex !important;
-    align-items: center !important;
-    gap: 14px;
-}
-
-.ribbon-unit {
-    display: flex !important;
-    align-items: baseline !important;
-    gap: 4px;
-    white-space: nowrap;
-}
-
-.ribbon-unit strong {
-    font-size: 18px;
-}
-
-.ribbon-unit small {
-    font-size: 9px;
-    font-weight: 700;
-}
-
-.ribbon-arrow {
-    font-size: 20px;
-    font-weight: 900;
-}
-
-/* =========================
-   HERO
-========================= */
-
-.hero {
-    width: 100%;
-    min-height: 560px !important;
-    display: flex !important;
-    align-items: center !important;
-
+.release-page {
     background:
         radial-gradient(
-            circle at 80% 45%,
-            rgba(242, 182, 50, 0.08),
-            transparent 30%
+            circle at 50% 35%,
+            rgba(242, 182, 50, 0.10),
+            transparent 38%
         ),
-        linear-gradient(
-            115deg,
-            #080b0f,
-            #0b1015 60%,
-            #10151a
-        );
+        var(--background) !important;
 }
 
-.hero > .container {
-    width: min(1180px, calc(100% - 40px)) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+.release-navigation a {
+    color: var(--muted) !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
 }
 
-.hero-content {
-    width: 100%;
-    max-width: 720px;
+.release-navigation a:hover {
+    color: var(--white) !important;
+    background: transparent !important;
 }
 
-.hero-eyebrow {
-    color: var(--yellow);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 18px;
+.release-main {
+    min-height: calc(100vh - 72px) !important;
 }
 
-.hero h1 {
-    margin: 0;
-    font-size: clamp(52px, 8vw, 94px);
-    line-height: 0.92;
-    letter-spacing: -5px;
-}
+.release-hero {
+    position: relative !important;
 
-.hero p {
-    color: var(--muted);
-    font-size: 18px;
-    line-height: 1.6;
-    max-width: 580px;
-    margin: 28px 0 0;
-}
+    min-height: calc(100vh - 72px) !important;
 
-.hero-buttons {
-    display: flex !important;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 30px;
-}
-
-/* =========================
-   BUTTONS
-========================= */
-
-.button {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-
-    min-height: 46px;
-    padding: 0 20px;
-
-    border-radius: 6px;
-    border: 1px solid transparent;
-
-    font-weight: 800;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.button-primary {
-    background: var(--yellow);
-    color: #111;
-}
-
-.button-secondary {
-    background: var(--panel);
-    color: var(--white);
-    border-color: var(--border);
-}
-
-.button-primary:hover {
-    background: var(--yellow-hover);
-}
-
-/* =========================
-   SECTIONS
-========================= */
-
-.section {
-    width: 100%;
-    padding: 90px 0;
-    border-top: 1px solid var(--border);
-}
-
-.section-header {
-    display: flex !important;
-    align-items: end;
-    justify-content: space-between;
-    gap: 40px;
-    margin-bottom: 42px;
-}
-
-.section-header h2 {
-    margin: 0;
-    font-size: 44px;
-    letter-spacing: -2px;
-}
-
-.section-header p {
-    max-width: 420px;
-    margin: 0;
-    color: var(--muted);
-    line-height: 1.6;
-}
-
-/* =========================
-   UPDATES
-========================= */
-
-.updates-list {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px;
-}
-
-.update-card {
-    width: 100%;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 26px;
-}
-
-.update-top {
-    display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-}
-
-.update-tag {
-    display: inline-block;
-    background: rgba(242, 182, 50, 0.12);
-    color: var(--yellow);
-    padding: 5px 9px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.update-date {
-    color: var(--muted);
-    font-size: 12px;
-}
-
-.update-title {
-    margin: 15px 0;
-    font-size: 27px;
-}
-
-.update-list {
-    margin: 0;
-    padding-left: 20px;
-    color: var(--muted);
-    line-height: 1.8;
-}
-
-.update-image {
-    width: 100%;
-    max-height: 450px;
-    object-fit: cover;
-    border-radius: 7px;
-    margin: 12px 0 20px;
-}
-
-/* =========================
-   COUNTDOWN PAGE
-========================= */
-
-.countdown-page {
-    min-height: calc(100vh - 72px);
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 80px 0;
-}
-
-.countdown-page-content {
-    width: min(950px, 100%);
-    text-align: center;
-}
-
-.countdown-page-eyebrow {
-    color: var(--yellow);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-}
-
-.countdown-page h1 {
-    font-size: clamp(48px, 8vw, 90px);
-    margin: 12px 0;
-    letter-spacing: -4px;
-}
-
-.countdown-page-description {
-    color: var(--muted);
-    font-size: 18px;
-}
-
-.release-panel {
-    margin: 55px auto;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-left: 6px solid var(--yellow);
-    border-radius: 10px;
-    padding: 45px;
-}
-
-.release-status {
-    color: var(--yellow);
-    font-weight: 900;
-    font-size: 14px;
-    letter-spacing: 3px;
-}
-
-.release-countdown {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-top: 35px;
-}
-
-.release-unit {
-    background: var(--background-2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 25px 10px;
-}
-
-.release-unit strong {
-    display: block;
-    font-size: 48px;
-}
-
-.release-unit small {
-    color: var(--muted);
-    font-size: 10px;
-    letter-spacing: 2px;
-}
-
-/* =========================
-   FOOTER
-========================= */
-
-.site-footer {
-    width: 100%;
-    border-top: 1px solid var(--border);
-    padding: 30px 0;
-    color: var(--muted);
-    font-size: 13px;
-}
-
-.footer-inner {
-    display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-}
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 700px) {
-
-    .container,
-    .hero > .container {
-        width: calc(100% - 28px) !important;
-    }
-
-    .site-header {
-        height: 64px !important;
-    }
-
-    .header-inner {
-        height: 64px !important;
-    }
-
-    .menu-button {
-        display: block !important;
-    }
-
-    .navigation {
-        display: none !important;
-        position: absolute;
-        top: 64px;
-        left: 0;
-        right: 0;
-        padding: 10px;
-        background: var(--background);
-        border-bottom: 1px solid var(--border);
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .navigation.open {
-        display: flex !important;
-    }
-
-    .navigation a {
-        width: 100%;
-    }
-
-    .countdown-ribbon-inner {
-        min-height: 48px !important;
-    }
-
-    .ribbon-right {
-        gap: 8px;
-    }
-
-    .ribbon-countdown {
-        gap: 6px;
-    }
-
-    .ribbon-unit strong {
-        font-size: 13px;
-    }
-
-    .ribbon-unit small {
-        display: none;
-    }
-
-    .hero {
-        min-height: 500px !important;
-    }
-
-    .hero h1 {
-        font-size: 55px;
-        letter-spacing: -3px;
-    }
-
-    .section-header {
-        display: block !important;
-    }
-
-    .section-header h2 {
-        margin-bottom: 15px;
-    }
-
-    .release-countdown {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .release-panel {
-        padding: 25px 15px;
-    }
-
-    .footer-inner {
-        flex-direction: column !important;
-        align-items: flex-start;
-    }
-}
-/* FINAL COUNTDOWN RIBBON FIX */
-
-.countdown-ribbon {
-    display: block !important;
-    width: 100% !important;
-    min-height: 54px !important;
-    background: var(--yellow) !important;
-    color: #111 !important;
-    text-decoration: none !important;
-    border-bottom: 3px solid #9f7515 !important;
-}
-
-.countdown-ribbon-inner {
-    width: min(1180px, calc(100% - 40px)) !important;
-    min-height: 54px !important;
-    margin: 0 auto !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-}
-
-.ribbon-right {
-    display: flex !important;
-    align-items: center !important;
-    gap: 18px !important;
-}
-
-.ribbon-countdown {
-    display: flex !important;
-    align-items: center !important;
-    gap: 14px !important;
-}
-
-.ribbon-unit {
-    display: flex !important;
-    align-items: baseline !important;
-    gap: 4px !important;
-}
-
-.ribbon-arrow {
-    display: block !important;
-}
-
-@media (max-width: 700px) {
-    .countdown-ribbon-inner {
-        width: calc(100% - 28px) !important;
-    }
-}
-/* =========================================
-   WESTBROOK COUNTY RELEASE RIBBON
-   ========================================= */
-
-.countdown-ribbon {
-    display: block !important;
-    position: relative !important;
-
-    width: 100% !important;
-    min-height: 72px !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-
-    background:
-        linear-gradient(
-            90deg,
-            #d99c1f 0%,
-            #f2b632 45%,
-            #ffc94d 100%
-        ) !important;
-
-    color: #111 !important;
-
-    border: 0 !important;
-    border-bottom: 3px solid #a87512 !important;
-    border-radius: 0 !important;
-
-    box-shadow:
-        0 5px 18px rgba(0, 0, 0, 0.22) !important;
-
-    cursor: pointer !important;
-    text-decoration: none !important;
 
     overflow: hidden !important;
+
+    border-bottom: 1px solid var(--border) !important;
 }
 
-/* subtle shine */
-
-.countdown-ribbon::before {
-    content: "" !important;
-
+.release-glow {
     position: absolute !important;
 
-    top: 0 !important;
-    left: -20% !important;
+    width: 650px !important;
+    height: 650px !important;
 
-    width: 40% !important;
-    height: 100% !important;
+    left: 50% !important;
+    top: 50% !important;
 
-    background: rgba(255, 255, 255, 0.12) !important;
+    transform: translate(-50%, -50%) !important;
 
-    transform: skewX(-25deg) !important;
+    background: radial-gradient(
+        circle,
+        rgba(242, 182, 50, 0.12),
+        transparent 65%
+    ) !important;
 
     pointer-events: none !important;
 }
 
-/* main content */
-
-.countdown-ribbon-inner {
+.release-content {
     position: relative !important;
     z-index: 2 !important;
 
-    width: min(1180px, calc(100% - 40px)) !important;
-
-    min-height: 72px !important;
+    width: min(900px, calc(100% - 40px)) !important;
 
     margin: 0 auto !important;
-    padding: 10px 0 !important;
 
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-
-    gap: 25px !important;
+    text-align: center !important;
 }
 
-/* left side */
+.release-eyebrow {
+    display: inline-block !important;
 
-.countdown-ribbon .ribbon-title {
-    display: flex !important;
-    align-items: center !important;
+    margin-bottom: 20px !important;
+
+    color: var(--yellow) !important;
+
+    font-size: 11px !important;
+    font-weight: 900 !important;
+
+    letter-spacing: 4px !important;
+
+    text-transform: uppercase !important;
+}
+
+.release-content h1 {
+    margin: 0 !important;
+
+    font-size: clamp(55px, 8vw, 105px) !important;
+
+    line-height: 0.88 !important;
+
+    letter-spacing: -5px !important;
+}
+
+.release-intro {
+    max-width: 580px !important;
+
+    margin: 30px auto 0 !important;
+
+    color: var(--muted) !important;
+
+    font-size: 18px !important;
+
+    line-height: 1.7 !important;
+}
+
+.release-panel {
+    position: relative !important;
+
+    max-width: 850px !important;
+
+    margin: 48px auto 0 !important;
+
+    padding: 34px !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(17, 24, 32, 0.98),
+            rgba(13, 18, 24, 0.98)
+        ) !important;
+
+    border: 1px solid var(--border) !important;
+
+    border-radius: 14px !important;
+
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.35) !important;
+}
+
+.release-status {
+    margin-bottom: 26px !important;
+
+    color: var(--yellow) !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+
+    letter-spacing: 3px !important;
+}
+
+.release-countdown {
+    display: grid !important;
+
+    grid-template-columns: repeat(4, 1fr) !important;
+
     gap: 12px !important;
 
     margin: 0 !important;
-    padding: 0 !important;
-
-    font-size: 14px !important;
-    font-weight: 900 !important;
-
-    letter-spacing: 1.5px !important;
-    line-height: 1 !important;
-
-    white-space: nowrap !important;
 }
 
-.countdown-ribbon .ribbon-title::before {
-    content: "●" !important;
+.release-unit {
+    padding: 25px 10px !important;
 
-    font-size: 10px !important;
+    background: rgba(8, 11, 15, 0.65) !important;
 
-    animation: releasePulse 1.5s ease-in-out infinite !important;
+    border: 1px solid var(--border) !important;
+
+    border-radius: 9px !important;
 }
 
-@keyframes releasePulse {
-    0%,
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 0.35;
-        transform: scale(0.7);
-    }
-}
-
-/* right side */
-
-.countdown-ribbon .ribbon-right {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-
-    gap: 24px !important;
-}
-
-/* countdown numbers */
-
-.countdown-ribbon .ribbon-countdown {
-    display: flex !important;
-    align-items: center !important;
-
-    gap: 8px !important;
-}
-
-/* individual countdown boxes */
-
-.countdown-ribbon .ribbon-unit {
-    display: flex !important;
-    align-items: center !important;
-
-    gap: 5px !important;
-
-    min-width: 70px !important;
-
-    padding: 8px 10px !important;
-
-    background: rgba(0, 0, 0, 0.12) !important;
-
-    border: 1px solid rgba(0, 0, 0, 0.12) !important;
-    border-radius: 7px !important;
-
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
-}
-
-/* number */
-
-.countdown-ribbon .ribbon-unit strong {
-    display: inline-block !important;
+.release-unit strong {
+    display: block !important;
 
     margin: 0 !important;
-    padding: 0 !important;
 
-    font-size: 20px !important;
-    font-weight: 950 !important;
+    color: var(--white) !important;
+
+    font-size: clamp(36px, 5vw, 58px) !important;
+
+    font-weight: 900 !important;
 
     line-height: 1 !important;
 
     font-variant-numeric: tabular-nums !important;
 }
 
-/* label */
+.release-unit small {
+    display: block !important;
 
-.countdown-ribbon .ribbon-unit small {
-    display: inline-block !important;
+    margin-top: 10px !important;
 
-    margin: 0 !important;
-    padding: 0 !important;
+    color: var(--muted) !important;
 
-    font-size: 8px !important;
+    font-size: 9px !important;
     font-weight: 900 !important;
 
-    letter-spacing: 1px !important;
-    line-height: 1 !important;
+    letter-spacing: 2px !important;
 }
 
-/* arrow */
+.release-date {
+    margin-top: 24px !important;
 
-.countdown-ribbon .ribbon-arrow {
+    color: #697681 !important;
+
+    font-size: 10px !important;
+    font-weight: 800 !important;
+
+    letter-spacing: 2px !important;
+}
+
+.release-message {
     display: flex !important;
+
     align-items: center !important;
     justify-content: center !important;
 
-    width: 38px !important;
-    height: 38px !important;
+    gap: 9px !important;
 
-    background: rgba(0, 0, 0, 0.14) !important;
+    margin-top: 24px !important;
+
+    color: #697681 !important;
+
+    font-size: 12px !important;
+}
+
+.release-message span {
+    width: 7px !important;
+    height: 7px !important;
 
     border-radius: 50% !important;
 
-    font-size: 21px !important;
-    font-weight: 900 !important;
+    background: var(--yellow) !important;
 
-    transition:
-        transform 0.2s ease,
-        background 0.2s ease !important;
+    box-shadow: 0 0 12px rgba(242, 182, 50, 0.7) !important;
 }
-
-.countdown-ribbon:hover .ribbon-arrow {
-    transform: translateX(4px) !important;
-
-    background: rgba(0, 0, 0, 0.22) !important;
-}
-
-.countdown-ribbon:hover {
-    filter: brightness(1.04) !important;
-}
-
-/* =========================================
-   MOBILE
-   ========================================= */
 
 @media (max-width: 700px) {
 
-    .countdown-ribbon {
-        min-height: 92px !important;
+    .release-main,
+    .release-hero {
+        min-height: calc(100vh - 64px) !important;
     }
 
-    .countdown-ribbon-inner {
+    .release-content {
         width: calc(100% - 28px) !important;
-
-        min-height: 92px !important;
-
-        flex-direction: column !important;
-
-        align-items: flex-start !important;
-        justify-content: center !important;
-
-        gap: 10px !important;
     }
 
-    .countdown-ribbon .ribbon-right {
-        width: 100% !important;
-
-        justify-content: space-between !important;
-
-        gap: 8px !important;
+    .release-content h1 {
+        font-size: 55px !important;
+        letter-spacing: -3px !important;
     }
 
-    .countdown-ribbon .ribbon-countdown {
-        gap: 5px !important;
-    }
-
-    .countdown-ribbon .ribbon-unit {
-        min-width: 0 !important;
-
-        padding: 7px 8px !important;
-    }
-
-    .countdown-ribbon .ribbon-unit strong {
+    .release-intro {
         font-size: 15px !important;
     }
 
-    .countdown-ribbon .ribbon-unit small {
-        font-size: 7px !important;
+    .release-panel {
+        padding: 20px 12px !important;
+        margin-top: 35px !important;
     }
 
-    .countdown-ribbon .ribbon-arrow {
-        width: 32px !important;
-        height: 32px !important;
+    .release-countdown {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
 
-        font-size: 18px !important;
+    .release-unit {
+        padding: 20px 8px !important;
+    }
+
+    .release-unit strong {
+        font-size: 38px !important;
+    }
+
+    .release-navigation a {
+        font-size: 11px !important;
     }
 }
