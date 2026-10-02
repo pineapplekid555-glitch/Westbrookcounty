@@ -2,11 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Westbrook County</title>
 
@@ -18,24 +14,22 @@
 
     <link
         rel="stylesheet"
-        href="/assets/css/styles.css?v=20261002-4"
+        href="/assets/css/styles.css?v=20261002-6"
     >
 </head>
 
 <body>
 
-    <!-- =========================
+    <!-- =========================================
          HEADER
-         ========================= -->
+         ========================================= -->
 
     <header class="site-header">
 
         <div class="container header-inner">
 
-            <a
-                href="/"
-                class="brand"
-            >
+            <a href="/" class="brand">
+
                 <img
                     src="/assets/images/westbrook-logo.png"
                     alt="Westbrook County"
@@ -44,6 +38,7 @@
                 <span data-site-name>
                     Westbrook County
                 </span>
+
             </a>
 
 
@@ -76,7 +71,7 @@
                 <a href="/pages/liveries.html">
                     Custom Liveries
                 </a>
-                
+
                 <a
                     href="#"
                     data-discord
@@ -93,17 +88,16 @@
     </header>
 
 
-    <!-- =========================
-         RELEASE RIBBON
-         ========================= -->
+    <!-- =========================================
+         RELEASE COUNTDOWN RIBBON
+         ========================================= -->
 
     <div
         class="countdown-ribbon"
         data-countdown-ribbon
         role="link"
         tabindex="0"
-        onclick="window.location.href='/pages/countdown.html'"
-        onkeydown="if(event.key === 'Enter' || event.key === ' ') window.location.href='/pages/countdown.html'"
+        aria-label="View Westbrook County release countdown"
     >
 
         <div class="countdown-ribbon-inner">
@@ -151,11 +145,16 @@
     </div>
 
 
-    <!-- =========================
-         HERO
-         ========================= -->
+    <!-- =========================================
+         MAIN
+         ========================================= -->
 
     <main>
+
+
+        <!-- =====================================
+             HERO
+             ===================================== -->
 
         <section class="hero">
 
@@ -196,10 +195,10 @@
 
 
                         <a
-                            href="#updates"
+                            href="#highlights"
                             class="button button-secondary"
                         >
-                            View Updates
+                            Explore Westbrook
                         </a>
 
                     </div>
@@ -211,9 +210,58 @@
         </section>
 
 
-        <!-- =========================
+        <!-- =====================================
+             HIGHLIGHTS
+             ===================================== -->
+
+        <section
+            class="section highlights-section"
+            id="highlights"
+        >
+
+            <div class="container">
+
+                <div class="section-header">
+
+                    <div>
+
+                        <div class="hero-eyebrow">
+                            WESTBROOK COUNTY
+                        </div>
+
+                        <h2>
+                            Highlights
+                        </h2>
+
+                    </div>
+
+
+                    <p>
+                        Explore the departments, services and
+                        opportunities available across Westbrook County.
+                    </p>
+
+                </div>
+
+
+                <!--
+                    app.js automatically fills this
+                    from content.js
+                -->
+
+                <div
+                    class="highlights-grid"
+                    data-highlights
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================
              UPDATES
-             ========================= -->
+             ===================================== -->
 
         <section
             class="section"
@@ -239,12 +287,16 @@
 
                     <p>
                         Keep up with the latest Westbrook County
-                        development, vehicles, departments and
-                        map changes.
+                        development, vehicles, departments and map changes.
                     </p>
 
                 </div>
 
+
+                <!--
+                    app.js automatically fills this
+                    from content.js
+                -->
 
                 <div
                     class="updates-list"
@@ -258,9 +310,9 @@
     </main>
 
 
-    <!-- =========================
+    <!-- =========================================
          FOOTER
-         ========================= -->
+         ========================================= -->
 
     <footer class="site-footer">
 
@@ -269,7 +321,6 @@
             <div>
                 © 2026 Westbrook County
             </div>
-
 
             <div>
                 Built for the Westbrook County community.
@@ -280,13 +331,13 @@
     </footer>
 
 
-    <!-- =========================
-         SCRIPTS
-         ========================= -->
+    <!-- =========================================
+         JAVASCRIPT
+         ========================================= -->
 
-    <script src="/assets/js/content.js?v=20261002-4"></script>
+    <script src="/assets/js/content.js?v=20261002-6"></script>
 
-    <script src="/assets/js/app.js?v=20261002-4"></script>
+    <script src="/assets/js/app.js?v=20261002-6"></script>
 
 </body>
 </html>
