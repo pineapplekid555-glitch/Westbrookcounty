@@ -10,8 +10,8 @@ export async function onRequestGet(context) {
 
   try {
     const [gamesRes, votesRes] = await Promise.all([
-      fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`),
-      fetch(`https://games.roblox.com/v1/games/${universeId}/votes`)
+      fetch(`https://www.roblox.com/games/86179625322199/Emergency-Westbrook-County=${universeId}`),
+      fetch(`https://www.roblox.com/games/86179625322199/Emergency-Westbrook-County${universeId}/votes`)
     ]);
 
     if (!gamesRes.ok || !votesRes.ok) throw new Error("Roblox API error");
