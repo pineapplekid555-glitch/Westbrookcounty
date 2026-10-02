@@ -71,13 +71,23 @@ export async function onRequestPost(context) {
   const vehicleName = String(body.vehicleName || "").trim().slice(0, 80);
   const surfaces = body.surfaces || {};
 
-  const required = ["left", "right", "front", "back", "top"];
+  const allowedSurfaces = ["left", "right", "front", "back", "top"];
+  const providedSurfaces = allowedSurfaces.filter(
+    (surface) => surfaces[surface] !== undefined && String(surfaces[surface]).trim() !== ""
+  );
 
-  for (const surface of required) {
+  if (providedSurfaces.length < 1 || providedSurfaces.length > 5) {
+    return json({
+      success: false,
+      error: "Provide between 1 and 5 vehicle texture/decal IDs."
+    }, 400);
+  }
+
+  for (const surface of providedSurfaces) {
     if (!validId(surfaces[surface])) {
       return json({
         success: false,
-        error: "A valid Roblox texture/decal ID is required for " + surface + "."
+        error: "Invalid Roblox texture/decal ID for " + surface + "."
       }, 400);
     }
   }
@@ -85,7 +95,7 @@ export async function onRequestPost(context) {
   try {
     const previews = {};
 
-    for (const surface of required) {
+    for (const surface of providedSurfaces) {
       previews[surface] = await getAssetPreview(String(surfaces[surface]));
     }
 
@@ -95,13 +105,9 @@ export async function onRequestPost(context) {
         id: crypto.randomUUID(),
         playerName,
         vehicleName,
-        surfaces: {
-          left: String(surfaces.left),
-          right: String(surfaces.right),
-          front: String(surfaces.front),
-          back: String(surfaces.back),
-          top: String(surfaces.top)
-        },
+        surfaces: Object.fromEntries(
+          providedSurfaces.map((surface) => [surface, String(surfaces[surface])])
+        ),
         previews,
         status: "pending_review",
         aiRecommendation: null,
