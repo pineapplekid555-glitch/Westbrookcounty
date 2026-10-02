@@ -608,3 +608,186 @@ a {
         width: calc(100% - 28px) !important;
     }
 }
+/* ================================
+   RELEASE RIBBON - FINAL
+   ================================ */
+
+.countdown-ribbon {
+    display: block !important;
+    position: relative !important;
+
+    width: 100vw !important;
+    max-width: none !important;
+
+    height: 64px !important;
+    min-height: 64px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: #f2b632 !important;
+    color: #111111 !important;
+
+    border: 0 !important;
+    border-bottom: 3px solid #9f7515 !important;
+    border-radius: 0 !important;
+
+    box-shadow: none !important;
+
+    cursor: pointer !important;
+    text-decoration: none !important;
+
+    overflow: hidden !important;
+}
+
+.countdown-ribbon-inner {
+    width: min(1180px, calc(100% - 40px)) !important;
+    height: 64px !important;
+    min-height: 64px !important;
+
+    margin: 0 auto !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    gap: 20px !important;
+}
+
+.countdown-ribbon .ribbon-title {
+    display: block !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: #111111 !important;
+
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+
+    letter-spacing: 1px !important;
+    white-space: nowrap !important;
+}
+
+.countdown-ribbon .ribbon-right {
+    display: flex !important;
+    flex-direction: row !important;
+
+    align-items: center !important;
+    justify-content: flex-end !important;
+
+    gap: 24px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.countdown-ribbon .ribbon-countdown {
+    display: flex !important;
+    flex-direction: row !important;
+
+    align-items: center !important;
+
+    gap: 18px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.countdown-ribbon .ribbon-unit {
+    display: flex !important;
+    flex-direction: row !important;
+
+    align-items: baseline !important;
+
+    gap: 5px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.countdown-ribbon .ribbon-unit strong {
+    display: inline !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: #111111 !important;
+
+    font-size: 19px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+}
+
+.countdown-ribbon .ribbon-unit small {
+    display: inline !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: #111111 !important;
+
+    font-size: 9px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+
+    letter-spacing: 1px !important;
+}
+
+.countdown-ribbon .ribbon-arrow {
+    display: block !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: #111111 !important;
+
+    font-size: 25px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .countdown-ribbon {
+        height: auto !important;
+        min-height: 58px !important;
+    }
+
+    .countdown-ribbon-inner {
+        width: calc(100% - 28px) !important;
+        height: auto !important;
+        min-height: 58px !important;
+
+        padding: 10px 0 !important;
+
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+
+        gap: 8px !important;
+    }
+
+    .countdown-ribbon .ribbon-right {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+
+    .countdown-ribbon .ribbon-countdown {
+        gap: 10px !important;
+    }
+
+    .countdown-ribbon .ribbon-unit strong {
+        font-size: 14px !important;
+    }
+
+    .countdown-ribbon .ribbon-unit small {
+        font-size: 8px !important;
+    }
+}
