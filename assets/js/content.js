@@ -15,8 +15,8 @@ window.WESTBROOK = {
   robloxUniverseId: "",
 
   links: {
-    roblox: "#",
-    discord: "#",
+    roblox: "https://www.roblox.com/share/g/36039454",
+    discord: "https://discord.gg/eNjfEsSKTX",
     liveries: "https://drive.google.com/drive/folders/1kCMe5aeZxmL3Q7lu4uaWUpoiIakj2CPE?usp=sharing"
   },
 
@@ -28,18 +28,18 @@ window.WESTBROOK = {
   features: [
     {
       number: "01",
-      title: "Emergency Services",
-      text: "Build your role around police, fire, EMS and the wider county."
+      title: "Law Enforcement",
+      text: "Enforce the law across the county, catch criminals and have fun!"
     },
     {
       number: "02",
-      title: "County Roleplay",
-      text: "A shared map designed for civilian and emergency-service scenarios."
+      title: "Fire",
+      text: "HElp fight fires or be EMS and help people across the county."
     },
     {
       number: "03",
-      title: "Custom Vehicles",
-      text: "Use the Westbrook livery library to keep your vehicles looking the part."
+      title: "DOT",
+      text: "Use tow trucks to recover vehicles and fix issues to keep the county safe."
     }
   ],
 
@@ -52,7 +52,7 @@ window.WESTBROOK = {
       items: [
         "New county layout",
         "Updated roads and junctions",
-        "New locations around Westbrook"
+        "New locations around the county"
       ]
     },
     {
@@ -61,9 +61,9 @@ window.WESTBROOK = {
       tag: "Vehicles",
       image: "",
       items: [
-        "Ford Mustang",
-        "New emergency-service vehicles",
-        "Updated vehicle lighting"
+        "New vehicles on all teams",
+        "New custom liveries in private servers",
+        "Updated vehicle lighting with custom ELS in private servers."
       ]
     }
   ]
