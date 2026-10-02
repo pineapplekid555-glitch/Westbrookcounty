@@ -7,9 +7,9 @@ window.WESTBROOK_CONTENT = {
      * ================================
      */
 
-    discordUrl: "https://discord.gg/YOUR-DISCORD",
+    discordUrl: "https://discord.gg/dByeJMQQdh",
 
-    robloxUrl: "https://www.roblox.com/",
+    robloxUrl: "https://www.roblox.com/games/86179625322199/Emergency-Westbrook-County",
 
 
     /*
@@ -18,7 +18,7 @@ window.WESTBROOK_CONTENT = {
      * ================================
      */
 
-    robloxUniverseId: "",
+    robloxUniverseId: "https://www.roblox.com/games/86179625322199/Emergency-Westbrook-County",
 
 
     /*
@@ -37,7 +37,7 @@ window.WESTBROOK_CONTENT = {
 
         {
             name: "Police Department",
-            shortName: "POLICE",
+            shortName: "LAW ENFORCEMENT",
             description: "Protecting the community and keeping Westbrook County safe.",
             image: "",
             link: "#"
