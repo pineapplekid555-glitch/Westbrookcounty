@@ -31,20 +31,20 @@ small{color:#9ca3af}
 <label>Vehicle name</label>
 <input id="vehicleName" placeholder="Vehicle name">
 
-<label>Left texture/decal ID</label>
-<input id="left" inputmode="numeric" placeholder="Roblox asset ID">
+<label>Left texture/decal ID <small>(optional)</small></label>
+<input id="left" inputmode="numeric" placeholder="Optional Roblox asset ID">
 
-<label>Right texture/decal ID</label>
-<input id="right" inputmode="numeric" placeholder="Roblox asset ID">
+<label>Right texture/decal ID <small>(optional)</small></label>
+<input id="right" inputmode="numeric" placeholder="Optional Roblox asset ID">
 
-<label>Front texture/decal ID</label>
-<input id="front" inputmode="numeric" placeholder="Roblox asset ID">
+<label>Front texture/decal ID <small>(optional)</small></label>
+<input id="front" inputmode="numeric" placeholder="Optional Roblox asset ID">
 
-<label>Back texture/decal ID</label>
-<input id="back" inputmode="numeric" placeholder="Roblox asset ID">
+<label>Back texture/decal ID <small>(optional)</small></label>
+<input id="back" inputmode="numeric" placeholder="Optional Roblox asset ID">
 
-<label>Top texture/decal ID</label>
-<input id="top" inputmode="numeric" placeholder="Roblox asset ID">
+<label>Top texture/decal ID <small>(optional)</small></label>
+<input id="top" inputmode="numeric" placeholder="Optional Roblox asset ID">
 
 <button type="submit">Submit Livery</button>
 </form>
@@ -87,8 +87,8 @@ form.addEventListener("submit",async(e)=>{
       return;
     }
 
-    result.innerHTML="<strong>Submitted successfully.</strong><br>Status: Pending AI review";
-    for(const side of ["left","right","front","back","top"]){
+    result.innerHTML="<strong>Submitted successfully.</strong><br>Status: Pending AI review<br>Surfaces submitted: "+Object.keys(d.submission.surfaces).length+"/5";
+    for(const side of Object.keys(d.submission.surfaces)){
       const card=document.createElement("div");
       card.className="card";
       card.innerHTML="<h3>"+side.charAt(0).toUpperCase()+side.slice(1)+"</h3><small>ID: "+d.submission.surfaces[side]+"</small>";
