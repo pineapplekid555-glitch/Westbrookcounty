@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
 
@@ -14,124 +16,207 @@
         href="/assets/images/westbrook-logo.png"
     >
 
-    <link rel="stylesheet" href="/assets/css/styles.css?v=20261002-2">
+    <link
+        rel="stylesheet"
+        href="/assets/css/styles.css?v=20261002-2"
+    >
 </head>
 
-<style>
-html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    overflow-x: hidden !important;
-}
+<body>
 
-.container {
-    width: min(1180px, calc(100% - 40px)) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="container header-inner">
 
-.site-header {
-    width: 100% !important;
-    height: 72px !important;
-}
+            <a href="/" class="brand">
+                <img
+                    src="/assets/images/westbrook-logo.png"
+                    alt="Westbrook County"
+                >
+                <span data-site-name>Westbrook County</span>
+            </a>
 
-.header-inner {
-    height: 72px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-}
+            <button
+                class="menu-button"
+                type="button"
+                data-menu-button
+                aria-label="Open menu"
+            >
+                MENU
+            </button>
 
-.brand {
-    display: flex !important;
-    align-items: center !important;
-}
+            <nav class="navigation" data-navigation>
+                <a href="/" class="active">Home</a>
+                <a href="/pages/updates.html">Updates</a>
+                <a href="/pages/liveries.html">Custom Liveries</a>
+                <a href="/pages/countdown.html">Release</a>
+                <a
+                    href="#"
+                    data-discord
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Discord
+                </a>
+            </nav>
 
-.brand img {
-    width: 42px !important;
-    height: 42px !important;
-    max-width: 42px !important;
-    max-height: 42px !important;
-    object-fit: contain !important;
-}
+        </div>
+    </header>
 
-.navigation {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-}
 
-.navigation a {
-    display: inline-flex !important;
-    align-items: center !important;
-}
+    <!-- RELEASE COUNTDOWN RIBBON -->
+    <a
+        class="countdown-ribbon"
+        data-countdown-ribbon
+        href="/pages/countdown.html"
+    >
+        <div class="container countdown-ribbon-inner">
 
-.menu-button {
-    display: none !important;
-}
+            <div class="ribbon-title">
+                Westbrook County Release
+            </div>
 
-.countdown-ribbon {
-    width: 100% !important;
-    min-height: 54px !important;
-}
+            <div class="ribbon-right">
 
-.countdown-ribbon-inner {
-    min-height: 51px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-}
+                <div class="ribbon-countdown">
 
-.ribbon-right {
-    display: flex !important;
-    align-items: center !important;
-}
+                    <div class="ribbon-unit">
+                        <strong data-days>00</strong>
+                        <small>DAYS</small>
+                    </div>
 
-.ribbon-countdown {
-    display: flex !important;
-    align-items: center !important;
-}
+                    <div class="ribbon-unit">
+                        <strong data-hours>00</strong>
+                        <small>HOURS</small>
+                    </div>
 
-.hero {
-    width: 100% !important;
-    min-height: 560px !important;
-    display: flex !important;
-    align-items: center !important;
-}
+                    <div class="ribbon-unit">
+                        <strong data-minutes>00</strong>
+                        <small>MINUTES</small>
+                    </div>
 
-.hero > .container {
-    width: min(1180px, calc(100% - 40px)) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
+                    <div class="ribbon-unit">
+                        <strong data-seconds>00</strong>
+                        <small>SECONDS</small>
+                    </div>
 
-.hero-content {
-    width: 100% !important;
-    max-width: 720px !important;
-}
+                </div>
 
-.hero-buttons {
-    display: flex !important;
-    align-items: center !important;
-}
+                <div class="ribbon-arrow">
+                    →
+                </div>
 
-@media (max-width: 700px) {
-    .container,
-    .hero > .container {
-        width: calc(100% - 28px) !important;
-    }
+            </div>
 
-    .menu-button {
-        display: block !important;
-    }
+        </div>
+    </a>
 
-    .navigation {
-        display: none !important;
-    }
 
-    .navigation.open {
-        display: flex !important;
-    }
-}
-</style>
+    <!-- HERO -->
+    <main>
+
+        <section class="hero">
+            <div class="container">
+
+                <div class="hero-content">
+
+                    <div class="hero-eyebrow">
+                        WESTBROOK COUNTY
+                    </div>
+
+                    <h1>
+                        Your county.<br>
+                        Your story.
+                    </h1>
+
+                    <p>
+                        Welcome to Westbrook County — an immersive
+                        Roblox roleplay experience built around
+                        emergency services, vehicles, communities
+                        and everyday life.
+                    </p>
+
+                    <div class="hero-buttons">
+
+                        <a
+                            href="#"
+                            class="button button-primary"
+                            data-roblox
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Play Westbrook County
+                        </a>
+
+                        <a
+                            href="#updates"
+                            class="button button-secondary"
+                        >
+                            View Updates
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- UPDATES -->
+        <section
+            class="section"
+            id="updates"
+        >
+            <div class="container">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>Latest Updates</h2>
+                    </div>
+
+                    <p>
+                        Keep up with the latest Westbrook County
+                        development, vehicles, departments and
+                        map changes.
+                    </p>
+
+                </div>
+
+                <div
+                    class="updates-list"
+                    data-updates
+                >
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+
+        <div class="container footer-inner">
+
+            <div>
+                © 2026 Westbrook County
+            </div>
+
+            <div>
+                Built for the Westbrook County community.
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- SCRIPTS -->
+    <script src="/assets/js/content.js"></script>
+    <script src="/assets/js/app.js"></script>
+
+</body>
+</html>
