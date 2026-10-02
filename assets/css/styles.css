@@ -1222,3 +1222,124 @@ button {
         align-items: flex-start;
     }
 }
+/* =========================================
+   HIGHLIGHTS
+   ========================================= */
+
+.highlights-section {
+    background:
+        linear-gradient(
+            180deg,
+            #080b0f 0%,
+            #0b1015 100%
+        );
+}
+
+.highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.highlight-card {
+    position: relative;
+    min-height: 260px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            145deg,
+            #151e27,
+            #0d1218
+        );
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--white);
+    text-decoration: none;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.highlight-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(242, 182, 50, 0.55);
+}
+
+.highlight-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(8, 11, 15, 0.08) 0%,
+            rgba(8, 11, 15, 0.45) 45%,
+            rgba(8, 11, 15, 0.96) 100%
+        );
+}
+
+.highlight-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 26px;
+}
+
+.highlight-short {
+    margin-bottom: 9px;
+    color: var(--yellow);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.highlight-title {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.05;
+    letter-spacing: -1px;
+}
+
+.highlight-description {
+    max-width: 500px;
+    margin: 12px 0 20px;
+    color: #aeb8c1;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.highlight-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background: var(--yellow);
+    border-radius: 50%;
+    color: #111;
+    font-size: 18px;
+    font-weight: 900;
+    transition: transform 0.2s ease;
+}
+
+.highlight-card:hover .highlight-arrow {
+    transform: translateX(5px);
+}
+
+@media (max-width: 700px) {
+
+    .highlights-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .highlight-card {
+        min-height: 230px;
+    }
+
+    .highlight-title {
+        font-size: 26px;
+    }
+}
