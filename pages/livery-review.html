@@ -6,31 +6,103 @@
 <title>Westbrook County — Livery Review</title>
 <style>
 body{font-family:Arial,sans-serif;margin:0;background:#0b0d10;color:#fff}
-main{max-width:900px;margin:50px auto;padding:24px}
-input,button{padding:12px;border-radius:8px;border:1px solid #333;background:#15191f;color:#fff}
-input{width:300px}button{cursor:pointer}
+main{max-width:1000px;margin:40px auto;padding:24px}
+input,button{padding:12px;border-radius:8px;border:1px solid #333;background:#15191f;color:#fff;box-sizing:border-box}
+input{width:100%;margin:6px 0 14px}button{cursor:pointer;width:100%;font-weight:700}
+form{background:#15191f;padding:20px;border-radius:12px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:25px}
+.card{background:#15191f;border:1px solid #282d35;border-radius:12px;padding:12px}
+.card img{width:100%;aspect-ratio:1/1;object-fit:contain;background:#0b0d10;border-radius:8px}
+.card h3{margin:8px 0 4px}
+small{color:#9ca3af}
 #result{margin-top:25px;padding:20px;border-radius:12px;background:#15191f}
-img{max-width:420px;max-height:420px;display:block;margin-top:20px;border-radius:10px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
-<body><main>
+<body>
+<main>
 <h1>Livery Review</h1>
-<p>Private review/testing page.</p>
-<input id="assetId" placeholder="Roblox texture/decal ID">
+<p>Submit all five vehicle surfaces together. The submission remains pending until reviewed.</p>
+
+<form id="form">
+<label>Player name</label>
 <input id="playerName" placeholder="Player name">
-<button id="submit">Submit for AI review</button>
+
+<label>Vehicle name</label>
+<input id="vehicleName" placeholder="Vehicle name">
+
+<label>Left texture/decal ID</label>
+<input id="left" inputmode="numeric" placeholder="Roblox asset ID">
+
+<label>Right texture/decal ID</label>
+<input id="right" inputmode="numeric" placeholder="Roblox asset ID">
+
+<label>Front texture/decal ID</label>
+<input id="front" inputmode="numeric" placeholder="Roblox asset ID">
+
+<label>Back texture/decal ID</label>
+<input id="back" inputmode="numeric" placeholder="Roblox asset ID">
+
+<label>Top texture/decal ID</label>
+<input id="top" inputmode="numeric" placeholder="Roblox asset ID">
+
+<button type="submit">Submit Livery</button>
+</form>
+
 <div id="result"></div>
+<div id="previews" class="grid"></div>
+
 <script>
+const form=document.getElementById("form");
 const result=document.getElementById("result");
-document.getElementById("submit").onclick=async()=>{
-  result.textContent="Checking Roblox asset...";
-  const assetId=document.getElementById("assetId").value.trim();
-  const playerName=document.getElementById("playerName").value.trim();
-  const r=await fetch("/api/liveries",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({assetId,playerName})});
-  const d=await r.json();
-  if(!r.ok){result.textContent=d.error||"Submission failed.";return;}
-  result.innerHTML="<strong>Submitted.</strong><p>Status: Pending AI review</p><p>Asset ID: "+d.submission.assetId+"</p><img src=""+d.submission.imageUrl+"" alt="Livery preview">";
-};
+const previews=document.getElementById("previews");
+
+form.addEventListener("submit",async(e)=>{
+  e.preventDefault();
+  result.textContent="Checking all five Roblox assets...";
+  previews.innerHTML="";
+
+  const body={
+    playerName:document.getElementById("playerName").value.trim(),
+    vehicleName:document.getElementById("vehicleName").value.trim(),
+    surfaces:{
+      left:document.getElementById("left").value.trim(),
+      right:document.getElementById("right").value.trim(),
+      front:document.getElementById("front").value.trim(),
+      back:document.getElementById("back").value.trim(),
+      top:document.getElementById("top").value.trim()
+    }
+  };
+
+  try{
+    const r=await fetch("/api/liveries",{
+      method:"POST",
+      headers:{"content-type":"application/json"},
+      body:JSON.stringify(body)
+    });
+    const d=await r.json();
+
+    if(!r.ok){
+      result.textContent=d.error||"Submission failed.";
+      return;
+    }
+
+    result.innerHTML="<strong>Submitted successfully.</strong><br>Status: Pending AI review";
+    for(const side of ["left","right","front","back","top"]){
+      const card=document.createElement("div");
+      card.className="card";
+      card.innerHTML="<h3>"+side.charAt(0).toUpperCase()+side.slice(1)+"</h3><small>ID: "+d.submission.surfaces[side]+"</small>";
+      const img=document.createElement("img");
+      img.src=d.submission.previews[side];
+      img.alt=side+" livery";
+      card.appendChild(img);
+      previews.appendChild(card);
+    }
+  }catch{
+    result.textContent="Unable to contact the Westbrook API.";
+  }
+});
 </script>
-</main></body>
+</main>
+</body>
 </html>
