@@ -1,70 +1,118 @@
-/*
-  THIS IS THE ONLY CONTENT FILE YOU NEED TO EDIT.
+window.WESTBROOK_CONTENT = {
+    siteName: "Westbrook County",
 
-  This file is NOT an online editor. Visitors cannot edit your site.
-  Change it in GitHub, commit the change, and Cloudflare Pages deploys it.
+    /*
+     * ================================
+     * LINKS
+     * ================================
+     */
 
-  IMPORTANT FOR REAL ROBLOX STATS:
-  Put your Roblox UNIVERSE ID below. Do not invent stats.
-  Example:
-  robloxUniverseId: "1234567890"
-*/
-window.WESTBROOK = {
-  name: "Westbrook County",
+    discordUrl: "https://discord.gg/YOUR-DISCORD",
 
-  robloxUniverseId: "",
+    robloxUrl: "https://www.roblox.com/",
 
-  links: {
-    roblox: "https://www.roblox.com/share/g/36039454",
-    discord: "https://discord.gg/eNjfEsSKTX",
-    liveries: "https://drive.google.com/drive/folders/1kCMe5aeZxmL3Q7lu4uaWUpoiIakj2CPE?usp=sharing"
-  },
 
-  releaseAt: "2026-10-02T21:00:00+01:00",
-  countdownHideAfterHours: 24,
+    /*
+     * ================================
+     * ROBLOX
+     * ================================
+     */
 
-  tagline: "A new Roblox emergency services community built around roleplay, progression and a growing county.",
+    robloxUniverseId: "",
 
-  features: [
-    {
-      number: "01",
-      title: "Law Enforcement",
-      text: "Enforce the law across the county, catch criminals and have fun!"
-    },
-    {
-      number: "02",
-      title: "Fire",
-      text: "HElp fight fires or be EMS and help people across the county."
-    },
-    {
-      number: "03",
-      title: "DOT",
-      text: "Use tow trucks to recover vehicles and fix issues to keep the county safe."
-    }
-  ],
 
-  updates: [
-    {
-      date: "02 October 2026",
-      title: "New Map",
-      tag: "Map",
-      image: "",
-      items: [
-        "New county layout",
-        "Updated roads and junctions",
-        "New locations around the county"
-      ]
-    },
-    {
-      date: "02 October 2026",
-      title: "New Vehicles",
-      tag: "Vehicles",
-      image: "",
-      items: [
-        "New vehicles on all teams",
-        "New custom liveries in private servers",
-        "Updated vehicle lighting with custom ELS in private servers."
-      ]
-    }
-  ]
+    /*
+     * ================================
+     * HIGHLIGHTS
+     * ================================
+     *
+     * These are the team/department
+     * cards shown on the homepage.
+     *
+     * You can change these whenever you
+     * want without editing the HTML.
+     */
+
+    highlights: [
+
+        {
+            name: "Police Department",
+            shortName: "POLICE",
+            description: "Protecting the community and keeping Westbrook County safe.",
+            image: "",
+            link: "#"
+        },
+
+        {
+            name: "Fire & Rescue",
+            shortName: "FIRE & RESCUE",
+            description: "Responding to fires, accidents and emergencies across the county.",
+            image: "",
+            link: "#"
+        },
+
+        {
+            name: "Medical Services",
+            shortName: "MEDICAL",
+            description: "Providing emergency medical care and ambulance services.",
+            image: "",
+            link: "#"
+        },
+
+        {
+            name: "Civilian Operations",
+            shortName: "CIVILIAN",
+            description: "Live your own story across the communities of Westbrook County.",
+            image: "",
+            link: "#"
+        }
+
+    ],
+
+
+    /*
+     * ================================
+     * UPDATES
+     * ================================
+     */
+
+    updates: [
+
+        {
+            date: "02 October 2026",
+            title: "New Map",
+            tag: "Map",
+            image: "",
+            items: [
+                "New roads and highways",
+                "New residential areas",
+                "New emergency service locations"
+            ]
+        },
+
+        {
+            date: "02 October 2026",
+            title: "New Vehicles",
+            tag: "Vehicles",
+            image: "",
+            items: [
+                "Private Server Custom Liveries",
+                "New police vehicles",
+                "Updated emergency lighting & Custom ELS (Private Servers)"
+            ]
+        },
+
+        {
+            date: "02 October 2026",
+            title: "Emergency Services",
+            tag: "Services",
+            image: "",
+            items: [
+                "New police department",
+                "New fire department",
+                "New medical services"
+            ]
+        }
+
+    ]
 };
