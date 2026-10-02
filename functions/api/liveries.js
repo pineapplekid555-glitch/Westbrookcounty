@@ -128,7 +128,9 @@ export async function onRequestPost(context) {
     const previews = {};
 
     for (const surface of providedSurfaces) {
-      previews[surface] = "/api/liveries?id=" + encodeURIComponent(String(surfaces[surface])) + "&image=1";
+      previews[surface] = "https://www.roblox.com/asset-thumbnail/image?assetId=" +
+        encodeURIComponent(String(surfaces[surface])) +
+        "&width=420&height=420&format=png";
     }
 
     return json({
