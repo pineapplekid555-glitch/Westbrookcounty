@@ -12,6 +12,26 @@ function validId(value) {
   return /^\d{3,20}$/.test(String(value || ""));
 }
 
+async function getAssetImageResponse(assetId) {
+  const r = await fetch(
+    "https://assetdelivery.roblox.com/v1/asset/?id=" + encodeURIComponent(assetId),
+    { redirect: "follow" }
+  );
+
+  if (!r.ok) throw new Error("Roblox asset request failed");
+
+  const type = r.headers.get("content-type") || "application/octet-stream";
+  if (!type.startsWith("image/")) throw new Error("Roblox asset is not an image");
+
+  return new Response(r.body, {
+    status: 200,
+    headers: {
+      "content-type": type,
+      "cache-control": "public, max-age=300"
+    }
+  });
+}
+
 async function getAssetPreview(assetId) {
   const r = await fetch(
     "https://thumbnails.roblox.com/v1/assets?assetIds=" +
@@ -30,7 +50,19 @@ async function getAssetPreview(assetId) {
 }
 
 export async function onRequestGet(context) {
-  const id = new URL(context.request.url).searchParams.get("id");
+  const requestUrl = new URL(context.request.url);
+  const id = requestUrl.searchParams.get("id");
+
+  if (requestUrl.searchParams.get("image") === "1") {
+    if (!validId(id)) {
+      return json({ success: false, error: "Invalid Roblox asset ID." }, 400);
+    }
+    try {
+      return await getAssetImageResponse(id);
+    } catch {
+      return json({ success: false, error: "Unable to load that Roblox image asset." }, 404);
+    }
+  }
 
   if (id) {
     if (!validId(id)) {
@@ -96,7 +128,7 @@ export async function onRequestPost(context) {
     const previews = {};
 
     for (const surface of providedSurfaces) {
-      previews[surface] = await getAssetPreview(String(surfaces[surface]));
+      previews[surface] = "/api/liveries?id=" + encodeURIComponent(String(surfaces[surface])) + "&image=1";
     }
 
     return json({
