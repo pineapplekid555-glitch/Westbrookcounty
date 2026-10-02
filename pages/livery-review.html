@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Westbrook County — Livery Review</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#0b0d10;color:#fff}
+main{max-width:900px;margin:50px auto;padding:24px}
+input,button{padding:12px;border-radius:8px;border:1px solid #333;background:#15191f;color:#fff}
+input{width:300px}button{cursor:pointer}
+#result{margin-top:25px;padding:20px;border-radius:12px;background:#15191f}
+img{max-width:420px;max-height:420px;display:block;margin-top:20px;border-radius:10px}
+</style>
+</head>
+<body><main>
+<h1>Livery Review</h1>
+<p>Private review/testing page.</p>
+<input id="assetId" placeholder="Roblox texture/decal ID">
+<input id="playerName" placeholder="Player name">
+<button id="submit">Submit for AI review</button>
+<div id="result"></div>
+<script>
+const result=document.getElementById("result");
+document.getElementById("submit").onclick=async()=>{
+  result.textContent="Checking Roblox asset...";
+  const assetId=document.getElementById("assetId").value.trim();
+  const playerName=document.getElementById("playerName").value.trim();
+  const r=await fetch("/api/liveries",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({assetId,playerName})});
+  const d=await r.json();
+  if(!r.ok){result.textContent=d.error||"Submission failed.";return;}
+  result.innerHTML="<strong>Submitted.</strong><p>Status: Pending AI review</p><p>Asset ID: "+d.submission.assetId+"</p><img src=""+d.submission.imageUrl+"" alt="Livery preview">";
+};
+</script>
+</main></body>
+</html>
