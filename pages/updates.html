@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="../assets/images/favicon.png">
+<title>Updates | Westbrook County</title>
+<style>
+:root{--bg:#070a0d;--panel:#0d1217;--panel2:#111820;--text:#f4f6f8;--muted:#9aa5af;--line:#252d35;--gold:#f0b93d;--blue:#2f79ff;--red:#e94a50;--green:#48d58a}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{margin:0;min-width:0;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:Inter,Arial,Helvetica,sans-serif;line-height:1.5}
+a{color:inherit;text-decoration:none}button{font:inherit}img{display:block;max-width:100%}
+.header{position:sticky;top:0;z-index:100;background:rgba(7,10,13,.96);border-bottom:1px solid var(--line)}
+.header-inner{width:min(1180px,calc(100% - 48px));height:76px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;flex:0 0 auto}.brand-logo{width:58px!important;height:58px!important;max-width:58px!important;object-fit:contain}
+.nav{display:flex;align-items:center;gap:4px}.nav a{display:inline-flex;align-items:center;padding:10px 13px;border-radius:6px;color:#c0c7ce;font-size:13px;font-weight:800}.nav a:hover,.nav a.active{background:#171d24;color:#fff}.nav-button{background:var(--gold)!important;color:#111!important}
+.nav-toggle{display:none;border:0;background:none;color:#fff;font-size:24px;cursor:pointer}
+.hero{border-bottom:1px solid var(--line);background:radial-gradient(circle at 78% 42%,rgba(46,112,255,.12),transparent 27%),radial-gradient(circle at 88% 55%,rgba(231,65,73,.08),transparent 22%)}
+.hero-grid{width:min(1180px,calc(100% - 48px));min-height:570px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(340px,.95fr);align-items:center;gap:55px}
+.hero-copy{min-width:0}.kicker,.section-label{display:block;color:var(--gold);font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
+.hero h1{margin:16px 0 24px;font-size:clamp(54px,6.2vw,88px);line-height:.91;letter-spacing:-.065em}.hero h1 span{color:#fff}.hero-copy p{max-width:610px;margin:0;color:#bdc5cc;font-size:17px}.hero-actions{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap}
+.button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:5px;font-size:12px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.button.primary{background:var(--gold);color:#111}.button.secondary{border:1px solid #3b444d;background:#11161c;color:#fff}
+.hero-art{position:relative;min-width:0;height:450px;display:flex;align-items:center;justify-content:center}.art-glow{position:absolute;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(47,121,255,.22),rgba(233,74,80,.08),transparent 70%);filter:blur(12px)}
+.hero-logo{position:relative!important;width:min(440px,82%)!important;height:auto!important;max-width:440px!important;max-height:400px!important;object-fit:contain!important;filter:drop-shadow(0 24px 34px rgba(0,0,0,.6))}.art-label{position:absolute;right:0;bottom:12px;color:#707c86;font-size:10px;letter-spacing:.18em}
+.release{width:min(1180px,calc(100% - 48px));min-height:112px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:32px;border-bottom:1px solid var(--line)}.release strong{display:block;margin-top:4px;font-size:14px}.timer{display:grid;grid-template-columns:repeat(4,76px);gap:14px}.timer div{text-align:center}.timer b{display:block;font-size:30px;line-height:1}.timer small{display:block;margin-top:7px;color:#7d8994;font-size:8px;font-weight:800;letter-spacing:.14em}
+.section{width:min(1180px,calc(100% - 48px));margin:0 auto;padding:82px 0}.section-top{display:flex;align-items:flex-end;justify-content:space-between;gap:45px;padding-bottom:26px;border-bottom:1px solid var(--line)}.section-top h2{margin:10px 0 0;font-size:44px;line-height:1;letter-spacing:-.05em}.section-top h2 span{color:var(--blue)}.section-top p{max-width:440px;margin:0;color:var(--muted)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);margin-top:26px;border-top:1px solid var(--line);border-left:1px solid var(--line)}.stat-card{min-height:160px;padding:24px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(13,18,23,.55)}.stat-card span{color:#8995a0;font-size:10px;font-weight:900;letter-spacing:.12em}.stat-card strong{display:block;margin:15px 0 4px;font-size:38px;line-height:1}.stat-card small{color:#68747e}.stats-note{margin:13px 0 0;color:#68747e;font-size:12px}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:26px;background:var(--line)}.feature-card{min-height:210px;padding:30px;background:var(--panel)}.feature-card>span{color:var(--blue);font-size:12px;font-weight:900}.feature-card h3{margin:55px 0 8px;font-size:23px}.feature-card p{margin:0;color:var(--muted)}
+.callout,.livery-box{display:flex;align-items:center;justify-content:space-between;gap:35px;padding:38px;border:1px solid var(--line);background:linear-gradient(120deg,#0d1217,#121920)}.callout h2,.livery-box h2{margin:11px 0;font-size:40px;line-height:1;letter-spacing:-.04em}.callout h2 span,.livery-box h2 span{color:var(--red)}.callout p,.livery-box p{max-width:650px;margin:0;color:var(--muted)}
+.page-head{width:min(1180px,calc(100% - 48px));margin:0 auto;padding:82px 0 20px}.page-head h1{margin:12px 0;font-size:68px;line-height:1;letter-spacing:-.06em}.page-head p{margin:0;color:var(--muted);font-size:17px}
+.updates-section{padding-top:35px}.updates-list{display:flex;flex-direction:column;gap:14px}.update{display:grid;grid-template-columns:230px minmax(0,1fr);border:1px solid var(--line);background:var(--panel);overflow:hidden}.update>img{width:100%;height:100%;min-height:180px;object-fit:cover}.update-body{padding:28px}.update-meta{display:flex;gap:10px;color:#7f8b95;font-size:11px;text-transform:uppercase;letter-spacing:.1em}.update-meta b{color:var(--gold)}.update h2{margin:13px 0;font-size:30px}.update ul{margin:0;padding-left:20px;color:#c4cbd1}
+.footer{width:min(1180px,calc(100% - 48px));min-height:82px;margin:0 auto;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:20px;color:#737f89;font-size:12px}.footer>div{display:flex;align-items:center;gap:10px}.footer img{width:38px!important;height:38px!important;object-fit:contain}.countdown-live{display:flex;align-items:center;gap:10px;color:var(--green)}.countdown-live span{width:8px;height:8px;background:var(--green);border-radius:50%;display:block}
+@media(max-width:800px){.header-inner,.hero-grid,.release,.section,.page-head,.footer{width:calc(100% - 28px)}.header-inner{height:70px}.nav-toggle{display:block}.nav{display:none;position:absolute;left:14px;right:14px;top:70px;padding:7px;flex-direction:column;align-items:stretch;background:#0b0f13;border:1px solid var(--line)}.nav.open{display:flex}.nav a{width:100%}.hero-grid{grid-template-columns:1fr;min-height:auto;padding:55px 0 45px;gap:25px}.hero h1{font-size:clamp(48px,15vw,72px)}.hero-art{height:310px}.hero-logo{width:min(320px,90%)!important;max-height:300px!important}.art-label{display:none}.release{display:block;padding:20px 0}.timer{grid-template-columns:repeat(4,1fr);gap:7px;margin-top:18px}.timer b{font-size:25px}.section{padding:60px 0}.section-top{display:block}.section-top h2{font-size:36px}.section-top p{margin-top:15px}.stats-grid{grid-template-columns:1fr 1fr}.feature-grid{grid-template-columns:1fr}.callout,.livery-box{display:block;padding:28px}.callout .button,.livery-box .button{margin-top:18px}.page-head{padding:60px 0 10px}.page-head h1{font-size:50px}.update{grid-template-columns:1fr}.update>img{height:200px;min-height:0}.footer{padding:18px 0;flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<header class="header"><div class="header-inner">
+<a class="brand" href="../index.html"><img src="../assets/images/westbrook-logo.png" alt="Westbrook County" class="brand-logo"></a>
+<button class="nav-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+<nav class="nav"><a href="../index.html" data-nav>Home</a><a href="updates.html" data-nav>Updates</a><a href="liveries.html" data-nav>Custom Liveries</a><a class="nav-button" href="#" data-discord>Discord</a></nav>
+</div></header>
+<main>
+<section class="page-head"><span class="section-label">WESTBROOK COUNTY</span><h1>Updates</h1><p>The latest development news, features and changes.</p></section>
+<section class="section updates-section"><div class="updates-list" data-updates></div></section>
+</main>
+<footer class="footer"><div><img src="../assets/images/westbrook-logo.png" alt="Westbrook County"><span>Westbrook County</span></div><span>© <span data-year></span> Westbrook County</span></footer>
+
+<script>
+if (!window.WESTBROOK) {
+/*
+  THIS IS THE ONLY CONTENT FILE YOU NEED TO EDIT.
+
+  This file is NOT an online editor. Visitors cannot edit your site.
+  Change it in GitHub, commit the change, and Cloudflare Pages deploys it.
+
+  IMPORTANT FOR REAL ROBLOX STATS:
+  Put your Roblox UNIVERSE ID below. Do not invent stats.
+  Example:
+  robloxUniverseId: "1234567890"
+*/
+window.WESTBROOK = {
+  name: "Westbrook County",
+
+  robloxUniverseId: "",
+
+  links: {
+    roblox: "#",
+    discord: "#",
+    liveries: "https://drive.google.com/drive/folders/1kCMe5aeZxmL3Q7lu4uaWUpoiIakj2CPE?usp=sharing"
+  },
+
+  releaseAt: "2026-10-02T21:00:00+01:00",
+  countdownHideAfterHours: 24,
+
+  tagline: "A new Roblox emergency services community built around roleplay, progression and a growing county.",
+
+  features: [
+    {
+      number: "01",
+      title: "Emergency Services",
+      text: "Build your role around police, fire, EMS and the wider county."
+    },
+    {
+      number: "02",
+      title: "County Roleplay",
+      text: "A shared map designed for civilian and emergency-service scenarios."
+    },
+    {
+      number: "03",
+      title: "Custom Vehicles",
+      text: "Use the Westbrook livery library to keep your vehicles looking the part."
+    }
+  ],
+
+  updates: [
+    {
+      date: "02 October 2026",
+      title: "New Map",
+      tag: "Map",
+      image: "",
+      items: [
+        "New county layout",
+        "Updated roads and junctions",
+        "New locations around Westbrook"
+      ]
+    },
+    {
+      date: "02 October 2026",
+      title: "New Vehicles",
+      tag: "Vehicles",
+      image: "",
+      items: [
+        "Ford Mustang",
+        "New emergency-service vehicles",
+        "Updated vehicle lighting"
+      ]
+    }
+  ]
+};
+
+}
+</script>
+<script>
+(() => {
+  "use strict";
+  const site = window.WESTBROOK || {};
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
+
+  function links() {
+    $$("[data-discord]").forEach(a => { a.href = site.links?.discord || "#"; });
+    $$("[data-roblox]").forEach(a => { a.href = site.links?.roblox || "#"; });
+    $$("[data-liveries]").forEach(a => { a.href = site.links?.liveries || "#"; });
+    $$("[data-year]").forEach(e => e.textContent = new Date().getFullYear());
+    const tagline = $("[data-tagline]");
+    if (tagline) tagline.textContent = site.tagline || "";
+  }
+
+  function nav() {
+    const button = $(".nav-toggle"), nav = $(".nav");
+    if (!button || !nav) return;
+    button.addEventListener("click", () => {
+      const open = nav.classList.toggle("open");
+      button.setAttribute("aria-expanded", String(open));
+    });
+    $$("[data-nav]").forEach(a => {
+      const target = new URL(a.href, location.href).pathname.replace(/\/+$/, "") || "/";
+      const here = location.pathname.replace(/\/+$/, "") || "/";
+      if (target === here) a.classList.add("active");
+    });
+  }
+
+  function features() {
+    const box = $("[data-features]");
+    if (!box) return;
+    box.innerHTML = (site.features || []).map(x => `
+      <article class="feature-card">
+        <span>${esc(x.number)}</span>
+        <h3>${esc(x.title)}</h3>
+        <p>${esc(x.text)}</p>
+      </article>`).join("");
+  }
+
+  function updates() {
+    const box = $("[data-updates]");
+    if (!box) return;
+    box.innerHTML = (site.updates || []).map(x => `
+      <article class="update">
+        ${x.image ? `<img src="${esc(x.image)}" alt="" loading="lazy">` : ""}
+        <div class="update-body">
+          <div class="update-meta"><span>${esc(x.date)}</span>${x.tag ? `<b>${esc(x.tag)}</b>` : ""}</div>
+          <h2>${esc(x.title)}</h2>
+          <ul>${(x.items || []).map(i => `<li>${esc(i)}</li>`).join("")}</ul>
+        </div>
+      </article>`).join("");
+  }
+
+  function countdown() {
+    const box = $("[data-countdown]");
+    if (!box || !site.releaseAt) return;
+    const release = Date.parse(site.releaseAt);
+    if (!Number.isFinite(release)) return;
+    const hideAt = release + (Number(site.countdownHideAfterHours) || 24) * 3600000;
+    const set = (s,v) => { const e=$(s,box); if(e)e.textContent=String(v).padStart(2,"0"); };
+
+    function tick() {
+      const now = Date.now();
+      if (now >= hideAt) { box.remove(); return; }
+      if (now >= release) {
+        box.innerHTML = `<div class="countdown-live"><span></span><strong>Westbrook County is live.</strong></div>`;
+        return;
+      }
+      const d = release-now;
+      set("[data-days]", Math.floor(d/86400000));
+      set("[data-hours]", Math.floor((d%86400000)/3600000));
+      set("[data-minutes]", Math.floor((d%3600000)/60000));
+      set("[data-seconds]", Math.floor((d%60000)/1000));
+    }
+    tick(); setInterval(tick,1000);
+  }
+
+  function formatNumber(value) {
+    if (typeof value !== "number") return "—";
+    if (value >= 1e9) return (value/1e9).toFixed(value >= 1e10 ? 0 : 1).replace(".0","") + "B";
+    if (value >= 1e6) return (value/1e6).toFixed(value >= 1e7 ? 0 : 1).replace(".0","") + "M";
+    if (value >= 1e3) return (value/1e3).toFixed(value >= 1e4 ? 0 : 1).replace(".0","") + "K";
+    return value.toLocaleString();
+  }
+
+  async function stats() {
+    const box = $("[data-stats]");
+    if (!box) return;
+    const id = String(site.robloxUniverseId || "").trim();
+    const note = $("[data-stats-note]");
+    if (!id) {
+      if (note) note.textContent = "Real Roblox stats will appear here after the Roblox universe ID is added to assets/js/content.js.";
+      return;
+    }
+    try {
+      const res = await fetch(`/api/stats?universeId=${encodeURIComponent(id)}`, {cache:"no-store"});
+      if (!res.ok) throw new Error("Stats request failed");
+      const s = await res.json();
+      box.innerHTML = `
+        <article class="stat-card"><span>PLAYING NOW</span><strong>${formatNumber(s.playing)}</strong><small>Players in-game</small></article>
+        <article class="stat-card"><span>TOTAL VISITS</span><strong>${formatNumber(s.visits)}</strong><small>Roblox visits</small></article>
+        <article class="stat-card"><span>LIKES</span><strong>${formatNumber(s.likes)}</strong><small>Roblox likes</small></article>
+        <article class="stat-card"><span>FAVOURITES</span><strong>${formatNumber(s.favorites)}</strong><small>Roblox favourites</small></article>`;
+      if (note) note.textContent = "Live data supplied by Roblox.";
+    } catch {
+      if (note) note.textContent = "Roblox stats could not be loaded right now.";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    links(); nav(); features(); updates(); countdown(); stats();
+  });
+})();
+
+</script>
+</body>
+</html>
