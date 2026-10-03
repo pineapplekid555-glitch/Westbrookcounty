@@ -19,7 +19,7 @@ export function json(data, status = 200) {
 }
 
 // Compares in constant time so the key can't be recovered by timing requests.
-function safeEqual(a, b) {
+export function safeEqual(a, b) {
   const enc = new TextEncoder();
   const x = enc.encode(String(a));
   const y = enc.encode(String(b));
