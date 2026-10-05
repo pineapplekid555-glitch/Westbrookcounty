@@ -100,7 +100,7 @@ window.WESTBROOK_CONTENT = {
                 "Fixed vehicle bugs (not driving and driving on it's own",
                 "Added gamepass Gifting",
                 "Updated the gun models",
-                "Map updates (Postal codes, building numbers and names, etc.),
+                "Map updates (Postal codes, building numbers and names, etc.)",
                 "API map",
                 "AI anti-cheat detection & livery approvals (overflow to manual approval)",
                 "Newer house interiors & premium housing gamepass",
