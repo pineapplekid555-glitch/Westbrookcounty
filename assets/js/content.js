@@ -79,38 +79,50 @@ window.WESTBROOK_CONTENT = {
     updates: [
 
         {
-            date: "02 October 2026",
-            title: "New Map",
-            tag: "Map",
+            date: "06 October 2026",
+            title: "Weekly Update",
+            tag: "Update",
             image: "",
             items: [
-                "New roads and highways",
-                "New residential areas",
-                "New emergency service locations"
+                "Auto shop (Tinted windows, color changing, repairs, rim colors, etc.)",
+                "Custom uniforms and gear in private servers",
+                "Upgraded Graphics & Lighting",
+                "House Buying",
+                "SWAT tools and vehicles",
+                "Updated police tool models & functionality",
+                "New 2023 Volvo XC90 (police and civilian)",
+                "Unmarked police cars (detective gamepass)",
+                "Gates at the police station",
+                "New county jail",
+                "Outdated server UI (in menu)",
+                "Fixed mobile support",
+                "New private server settings (custom speed limits, streetlight colors, etc.",
+                "Fixed vehicle bugs (not driving and driving on it's own",
+                "Added gamepass Gifting",
+                "Updated the gun models",
+                "Map updates (Postal codes, building numbers and names, etc.),
+                "API map",
+                "AI anti-cheat detection & livery approvals (overflow to manual approval)",
+                "Newer house interiors & premium housing gamepass",
+                "Increased paycheck gamepass (2x)",
+                "Updated and added more in-game settings",
+                "Improved lag optimisers",
+                "Automatic turn signals (you can turn this off in settings)",
+                "Turn signals and hazards on the drive UI dashboard",
+                "Fixed some lighting bugs",
+                "Added 2020 Audi RS6 Avant C8"
             ]
         },
 
         {
             date: "02 October 2026",
-            title: "New Vehicles",
-            tag: "Vehicles",
+            title: "Alpha Release",
+            tag: "Release",
             image: "",
             items: [
-                "Private Server Custom Liveries",
+                "Private Servers with Custom Liveries",
                 "New police vehicles",
                 "Updated emergency lighting & Custom ELS (Private Servers)"
-            ]
-        },
-
-        {
-            date: "02 October 2026",
-            title: "Emergency Services",
-            tag: "Services",
-            image: "",
-            items: [
-                "New police department",
-                "New fire department",
-                "New medical services"
             ]
         }
 
