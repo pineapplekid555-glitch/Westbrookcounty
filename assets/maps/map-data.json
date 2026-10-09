@@ -1,0 +1,320 @@
+{
+  "game": "Westbrook County",
+  "generated": "2026-10-03",
+  "bounds": {
+    "minX": -4430,
+    "maxX": 4697,
+    "minZ": -8292,
+    "maxZ": 3601
+  },
+  "note": "x/z are game coordinates in studs. Street label positions are approximate (one label per street, at the road piece nearest the street's centre).",
+  "places": [
+    {
+      "name": "Autoshop",
+      "icon": "AS",
+      "color": [
+        255,
+        155,
+        60
+      ],
+      "x": -59,
+      "z": -1053
+    },
+    {
+      "name": "Boat Ramp",
+      "icon": "BR",
+      "color": [
+        70,
+        185,
+        255
+      ],
+      "x": 1405,
+      "z": -1509
+    },
+    {
+      "name": "Boat Shed",
+      "icon": "BS",
+      "color": [
+        70,
+        185,
+        255
+      ],
+      "x": 1396,
+      "z": -2177
+    },
+    {
+      "name": "Car Dealership",
+      "icon": "CD",
+      "color": [
+        90,
+        210,
+        255
+      ],
+      "x": 133,
+      "z": -655
+    },
+    {
+      "name": "Cavero Gas Station",
+      "icon": "GAS",
+      "color": [
+        255,
+        205,
+        60
+      ],
+      "x": 388,
+      "z": -3998
+    },
+    {
+      "name": "Cavero Gas Station",
+      "icon": "GAS",
+      "color": [
+        255,
+        205,
+        60
+      ],
+      "x": 278,
+      "z": 265
+    },
+    {
+      "name": "Courthouse",
+      "icon": "CH",
+      "color": [
+        225,
+        225,
+        225
+      ],
+      "x": 21,
+      "z": -5553
+    },
+    {
+      "name": "DOT Building",
+      "icon": "DOT",
+      "color": [
+        255,
+        175,
+        45
+      ],
+      "x": -606,
+      "z": -853
+    },
+    {
+      "name": "Department of Motor Vehicles",
+      "icon": "DMV",
+      "color": [
+        0,
+        85,
+        255
+      ],
+      "x": 164,
+      "z": -1068
+    },
+    {
+      "name": "Fire Station",
+      "icon": "FD",
+      "color": [
+        255,
+        90,
+        60
+      ],
+      "x": -457,
+      "z": 236
+    },
+    {
+      "name": "Fire Station 2",
+      "icon": "FD",
+      "color": [
+        255,
+        90,
+        60
+      ],
+      "x": 947,
+      "z": -3332
+    },
+    {
+      "name": "Gun Store",
+      "icon": "GS",
+      "color": [
+        170,
+        100,
+        230
+      ],
+      "x": 624,
+      "z": -4594
+    },
+    {
+      "name": "National Park",
+      "icon": "NP",
+      "color": [
+        70,
+        205,
+        100
+      ],
+      "x": -986,
+      "z": -1369
+    },
+    {
+      "name": "Pier",
+      "icon": "PR",
+      "color": [
+        70,
+        185,
+        255
+      ],
+      "x": 1632,
+      "z": -1045
+    },
+    {
+      "name": "Richmond Police Station",
+      "icon": "PD",
+      "color": [
+        70,
+        130,
+        255
+      ],
+      "x": 1498,
+      "z": -3965
+    },
+    {
+      "name": "Sandwich Queen",
+      "icon": "SQ",
+      "color": [
+        255,
+        140,
+        190
+      ],
+      "x": -54,
+      "z": -684
+    },
+    {
+      "name": "Tool Store",
+      "icon": "TS",
+      "color": [
+        255,
+        140,
+        190
+      ],
+      "x": 154,
+      "z": -6382
+    },
+    {
+      "name": "Westbrook County Sheriff's Office",
+      "icon": "SO",
+      "color": [
+        70,
+        130,
+        255
+      ],
+      "x": 2006,
+      "z": 886
+    },
+    {
+      "name": "Westbrook Outfitters",
+      "icon": "WO",
+      "color": [
+        255,
+        85,
+        0
+      ],
+      "x": 154,
+      "z": -6624
+    }
+  ],
+  "streets": [
+    {
+      "name": "Andersen Avenue",
+      "x": -923,
+      "z": 3,
+      "angle": 90
+    },
+    {
+      "name": "Brooklyn Way",
+      "x": 136,
+      "z": -1206,
+      "angle": 0
+    },
+    {
+      "name": "Freedom Crescent",
+      "x": 145,
+      "z": -3366,
+      "angle": 0
+    },
+    {
+      "name": "Iron Avenue",
+      "x": 1062,
+      "z": -4540,
+      "angle": 0
+    },
+    {
+      "name": "Lakeview Drive",
+      "x": 1362,
+      "z": -1690,
+      "angle": 90
+    },
+    {
+      "name": "Liberty Boulevard",
+      "x": 482,
+      "z": -4649,
+      "angle": 90
+    },
+    {
+      "name": "Madison Drive",
+      "x": 240,
+      "z": -1452,
+      "angle": 90
+    },
+    {
+      "name": "Maple Street",
+      "x": 943,
+      "z": -1170,
+      "angle": 90
+    },
+    {
+      "name": "Muir Street",
+      "x": -1847,
+      "z": -1645,
+      "angle": 0
+    },
+    {
+      "name": "Oak Street",
+      "x": 583,
+      "z": -1182,
+      "angle": 90
+    },
+    {
+      "name": "Oakridge Road",
+      "x": 1425,
+      "z": -54,
+      "angle": 0
+    },
+    {
+      "name": "Parkview Drive",
+      "x": 102,
+      "z": -3031,
+      "angle": 0
+    },
+    {
+      "name": "Riverview Road",
+      "x": 378,
+      "z": -2694,
+      "angle": 90
+    },
+    {
+      "name": "Roosevelt Avenue",
+      "x": -310,
+      "z": -1385,
+      "angle": 0
+    },
+    {
+      "name": "Vice Street",
+      "x": -29,
+      "z": -3612,
+      "angle": 90
+    }
+  ],
+  "postals": [],
+  "buildingNumbers": [],
+  "size": {
+    "width": 1827,
+    "height": 2379
+  }
+}

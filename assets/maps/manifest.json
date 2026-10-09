@@ -1,0 +1,19 @@
+{
+  "files": [
+    "westbrook_blank.png",
+    "westbrook_labelled.png",
+    "westbrook_blank_small.png"
+  ],
+  "updated": "2026-10-09T15:05:00+00:00",
+  "size": {
+    "width": 1827,
+    "height": 2379
+  },
+  "studsPerPixel": 5,
+  "bounds": {
+    "minX": -4430,
+    "maxX": 4697,
+    "minZ": -8292,
+    "maxZ": 3601
+  }
+}
