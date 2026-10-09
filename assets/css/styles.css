@@ -1570,3 +1570,83 @@ button {
         align-items: flex-start;
     }
 }
+
+
+/* =========================================================
+   SERVER API DOCS PAGE
+   ========================================================= */
+
+.api-docs {
+    display: grid;
+    gap: 22px;
+}
+
+.api-docs code {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.88em;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1px 6px;
+    word-break: break-word;
+}
+
+.api-code {
+    margin: 18px 0;
+    padding: 16px 18px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-soft);
+}
+
+.table-wrap {
+    overflow-x: auto;
+    margin: 16px 0;
+}
+
+.api-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+
+.api-table th,
+.api-table td {
+    text-align: left;
+    vertical-align: top;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.api-table th {
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.api-table td:first-child {
+    white-space: nowrap;
+}
+
+.api-notes {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--text-soft);
+}
+
+.api-notes li + li {
+    margin-top: 8px;
+}
+
+@media (max-width: 720px) {
+    .api-table td:first-child {
+        white-space: normal;
+    }
+}

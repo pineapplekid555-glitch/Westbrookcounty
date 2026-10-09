@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Server API | Westbrook County</title>
+
+    <meta name="description" content="Run commands and read players and logs for your Westbrook County private server from a Discord bot or website.">
+    <meta name="theme-color" content="#07090d">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Server API | Westbrook County">
+    <meta property="og:description" content="Run commands and read players and logs for your Westbrook County private server from a Discord bot or website.">
+    <meta property="og:image" content="https://westbrookcounty.co.uk/assets/images/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    >
+
+    <link rel="stylesheet" href="/assets/css/styles.css?v=20261009-2">
+</head>
+
+<body>
+
+<header class="site-header">
+
+    <div class="container header-inner">
+
+        <a href="/" class="brand">
+            <img src="/assets/images/westbrook-logo-360.png" alt="" width="66" height="44">
+            <span data-site-name>Westbrook County</span>
+        </a>
+
+        <div class="header-right">
+
+            <nav class="navigation" data-navigation aria-label="Main">
+                <a href="/">Home</a>
+                <a href="/pages/updates.html">Updates</a>
+                <a href="/pages/liveries.html">Custom Liveries</a>
+                <a href="/pages/server-api.html" class="active">Server API</a>
+                <a href="#" data-discord target="_blank" rel="noopener noreferrer">Discord</a>
+            </nav>
+
+            <a
+                href="#"
+                class="button button-primary header-play"
+                data-roblox
+                target="_blank"
+                rel="noopener noreferrer"
+            >Play now</a>
+
+            <button
+                class="menu-button"
+                type="button"
+                data-menu-button
+                aria-label="Open navigation menu"
+                aria-expanded="false"
+            >MENU</button>
+
+        </div>
+
+    </div>
+
+</header>
+
+<main>
+
+    <section class="page-hero">
+
+        <img class="page-hero-bg" src="/assets/images/gallery/dusk-patrol.jpg" alt="">
+
+        <div class="container">
+
+            <div class="eyebrow">Private servers</div>
+
+            <h1>Server API</h1>
+
+            <p>
+                Run commands and read players and logs for your own private server
+                from a Discord bot or a website.
+            </p>
+
+        </div>
+
+    </section>
+
+    <section class="page-section">
+
+        <div class="container api-docs">
+
+            <div class="livery-card reveal">
+                <h3>Get a key</h3>
+                <ol class="livery-steps">
+                    <li>Buy the <strong>Server API</strong> pack for your private server (Settings &rarr; Upgrade Packs).</li>
+                    <li>Open the private server settings, scroll to <strong>Server API Pack</strong> and press <strong>Generate key</strong>.</li>
+                    <li>Copy the key straight away. It is shown once, only a fingerprint of it is stored, and regenerating it
+                        switches the old key off immediately.</li>
+                </ol>
+                <p>Keep the key private, like a password. Anyone who has it can run commands on your server.</p>
+            </div>
+
+            <div class="livery-card reveal">
+                <h3>Using the API</h3>
+                <p>
+                    Base URL: <code>https://westbrookcounty.co.uk/api/v1</code><br>
+                    Send your key in a header called <code>server-key</code>. Responses are JSON.
+                </p>
+                <div class="table-wrap">
+                    <table class="api-table">
+                        <thead><tr><th>Request</th><th>What it does</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>GET /server</code></td><td>Name, owner, co-owners, player count, join code and team balance.</td></tr>
+                            <tr><td><code>GET /server/players</code></td><td>Everyone in the server with their team and permission.</td></tr>
+                            <tr><td><code>GET /server/logs</code></td><td>Recent joins, leaves, team changes and API commands. Add <code>?type=join,command</code>, <code>?limit=50</code> or <code>?before=ID</code>.</td></tr>
+                            <tr><td><code>GET /server/joinlogs</code></td><td>Joins and leaves only.</td></tr>
+                            <tr><td><code>GET /server/commandlogs</code></td><td>Commands sent through the API and what happened.</td></tr>
+                            <tr><td><code>GET /server/teamlogs</code></td><td>Team changes only.</td></tr>
+                            <tr><td><code>POST /server/command</code></td><td>Send a command. Body: <code>{"command": ":h Hello everyone"}</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+<pre class="api-code">curl https://westbrookcounty.co.uk/api/v1/server/players \
+  -H "server-key: YOUR_KEY"
+
+curl -X POST https://westbrookcounty.co.uk/api/v1/server/command \
+  -H "server-key: YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"command": ":h Welcome to the server!"}'</pre>
+                <p>
+                    A successful command replies <code>{"message":"Success"}</code>. That means it was sent; the game runs it within a few
+                    seconds and records the result in <code>/server/commandlogs</code>.
+                </p>
+            </div>
+
+            <div class="livery-card reveal">
+                <h3>Commands</h3>
+                <div class="table-wrap">
+                    <table class="api-table">
+                        <thead><tr><th>Command</th><th>Effect</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>:h &lt;message&gt;</code></td><td>Show a message to everyone (also <code>:m</code>, <code>:message</code>, <code>:announce</code>). Filtered by Roblox.</td></tr>
+                            <tr><td><code>:pm &lt;player&gt; &lt;message&gt;</code></td><td>Private message to one player.</td></tr>
+                            <tr><td><code>:kick &lt;player&gt; [reason]</code></td><td>Remove a player. The owner and co-owners can't be kicked.</td></tr>
+                            <tr><td><code>:heal &lt;player&gt;</code></td><td>Restore a player's health.</td></tr>
+                            <tr><td><code>:time &lt;cycle|dawn|day|dusk|night&gt;</code></td><td>Set the time of day.</td></tr>
+                            <tr><td><code>:weather &lt;clear|cloudy|rain|storm|fog|dynamic&gt;</code></td><td>Set the weather.</td></tr>
+                            <tr><td><code>:peacetime &lt;off|normal|strict&gt;</code></td><td>Peacetime mode.</td></tr>
+                            <tr><td><code>:priority &lt;0-3&gt;</code></td><td>How many priorities may run at once (0 turns them off).</td></tr>
+                            <tr><td><code>:set &lt;setting&gt; &lt;value&gt;</code></td><td>peacetime, priorityMax, priorityCooldown, wantedDecay, civilianWeapons, timeOfDay, weather, streetLamps, fuelMultiplier, damageMultiplier, nameTags.</td></tr>
+                            <tr><td><code>:help</code></td><td>Lists these in the command log.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Player names can be a username, a display name, the start of either, or a user id.</p>
+            </div>
+
+            <div class="livery-card reveal">
+                <h3>Good to know</h3>
+                <ul class="api-notes">
+                    <li>The server has to be running. If it hasn't reported for about 15 minutes the API answers <code>422</code> (offline).</li>
+                    <li>Player and log data comes from the server's last report: about every 15 seconds while you are using the API, otherwise every minute or so.</li>
+                    <li>Limits: 20 requests per 10 seconds and 10 commands per minute per key. Too many gives <code>429</code> with a <code>Retry-After</code> header.</li>
+                    <li>Errors look like <code>{"code": 2002, "message": "Invalid server-key."}</code>.</li>
+                    <li>Never put the key in a website's front-end code. Call the API from a bot or a back-end only.</li>
+                </ul>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer class="site-footer">
+
+    <div class="container">
+
+        <div class="footer-top">
+
+            <a href="/" class="footer-brand">
+                <img src="/assets/images/westbrook-logo-360.png" alt="" width="66" height="44">
+                <span>Westbrook County</span>
+            </a>
+
+            <nav class="footer-links" aria-label="Footer">
+                <a href="/">Home</a>
+                <a href="/pages/updates.html">Updates</a>
+                <a href="/pages/liveries.html">Custom Liveries</a>
+                <a href="/pages/server-api.html">Server API</a>
+                <a href="#" data-discord target="_blank" rel="noopener noreferrer">Discord</a>
+                <a href="#" data-roblox target="_blank" rel="noopener noreferrer">Play</a>
+            </nav>
+
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2026 Westbrook County</div>
+            <div>Built for the Westbrook County community.</div>
+        </div>
+
+    </div>
+
+</footer>
+
+
+<script src="/assets/js/content.js?v=20261009-2"></script>
+<script src="/assets/js/app.js?v=20261009-2"></script>
+
+</body>
+</html>
