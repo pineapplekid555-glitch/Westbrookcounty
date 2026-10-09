@@ -23,7 +23,7 @@ Copy the contents of this zip over your website repo (keep the folders), commit 
 
 ## 2. Create the D1 database (stores key hashes, the latest server snapshot, recent logs)
 1. Cloudflare dashboard > **Storage & Databases > D1 SQL database > Create database**. Name it `westbrook-server-api`.
-2. Open it > **Console**, paste the whole of `server-api/schema.sql` and run it.
+2. Open it > **Console**, paste the whole of `server-api/schema.sql` and run it. (The file is plain SQL with no `-- comments` on purpose: the console squashes everything onto one line, so a comment would hide the rest and give "Requests without any query are not supported".)
 3. Go to **Workers & Pages > your Pages project > Settings > Bindings > Add > D1 database**.
    Variable name must be exactly `SERVER_API_DB`. Pick the database. Add it for **Production** (and Preview if you use it).
 
