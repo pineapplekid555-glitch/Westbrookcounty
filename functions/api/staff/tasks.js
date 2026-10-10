@@ -1,13 +1,14 @@
 // /api/staff/tasks  - a simple to-do board.
 //   GET   staff: tasks assigned to you plus open "anyone" tasks. manager+: every task (?status=open|done).
 //   POST  manager+: {action:"create", title, detail, assigneeId (optional), due (optional YYYY-MM-DD)}   {action:"delete", id}
+//         Tasks created by an admin are locked: only an admin can delete them.
 //         anyone who can see a task: {action:"done"|"reopen", id}
 import { requireStaff, audit, nowSec, ID_RE, LEVEL, validDate, readBody } from "../../_lib/staffAuth.js";
 import { json, clean } from "../../_lib/common.js";
 
 const shape = (r) => ({
   id: r.id, title: r.title, detail: r.detail, assigneeId: r.assignee_id, assigneeName: r.assignee_name, due: r.due_date,
-  status: r.status, createdBy: r.created_by_name, createdAt: r.created_at, doneBy: r.done_by_name, doneAt: r.done_at
+  status: r.status, createdBy: r.created_by_name, createdAt: r.created_at, doneBy: r.done_by_name, doneAt: r.done_at, adminLocked: Number(r.admin_locked) === 1
 });
 
 export async function onRequestGet(context) {
@@ -54,9 +55,9 @@ export async function onRequestPost(context) {
       if (validDate(due) === null) return json({ success: false, error: "Use a real due date." }, 400);
     }
     const row = await DB.prepare(
-      `INSERT INTO staff_tasks (title, detail, assignee_id, assignee_name, due_date, status, created_by, created_by_name, created_at)
-       VALUES (?1, ?2, ?3, ?4, ?5, 'open', ?6, ?7, ?8) RETURNING id`
-    ).bind(title, String(b.detail ?? "").replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, " ").trim().slice(0, 1000), assigneeId, assigneeName, due, user.id, user.name, nowSec()).first();
+      `INSERT INTO staff_tasks (title, detail, assignee_id, assignee_name, due_date, status, created_by, created_by_name, created_at, admin_locked)
+       VALUES (?1, ?2, ?3, ?4, ?5, 'open', ?6, ?7, ?8, ?9) RETURNING id`
+    ).bind(title, String(b.detail ?? "").replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, " ").trim().slice(0, 1000), assigneeId, assigneeName, due, user.id, user.name, nowSec(), user.level >= LEVEL.admin ? 1 : 0).first();
     await audit(context.env, user, "task.create", `#${row?.id} ${title}`);
     return json({ success: true, id: row?.id });
   }
@@ -67,6 +68,7 @@ export async function onRequestPost(context) {
   if (!task) return json({ success: false, error: "Not found." }, 404);
 
   if (action === "delete") {
+    if (Number(task.admin_locked) === 1 && user.level < LEVEL.admin) return json({ success: false, error: "Only an admin can delete a task an admin set." }, 403);
     await DB.prepare("DELETE FROM staff_tasks WHERE id = ?1").bind(id).run();
     await audit(context.env, user, "task.delete", `#${id} ${task.title}`);
     return json({ success: true });

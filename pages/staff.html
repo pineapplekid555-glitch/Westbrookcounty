@@ -246,16 +246,7 @@ a.sp-tile:hover { border-color: var(--blue-bright); }
                 </div>
 
                 <div id="tab-strikes" role="tabpanel" hidden>
-                    <div class="sp-card" id="strike-form-card" hidden>
-                        <h3>Issue a strike</h3>
-                        <div class="sp-row">
-                            <div><label for="strike-who">Member</label><select id="strike-who"></select></div>
-                            <div><label for="strike-days">Expires</label><select id="strike-days"><option value="30">After 30 days</option><option value="60">After 60 days</option><option value="90" selected>After 90 days</option><option value="180">After 180 days</option><option value="365">After 1 year</option><option value="0">Never</option></select></div>
-                        </div>
-                        <label for="strike-reason">Reason</label><textarea id="strike-reason" maxlength="400"></textarea>
-                        <button type="button" class="sp-btn bad" id="strike-send">Issue strike</button>
-                    </div>
-                    <div class="sp-card"><h3 id="strike-h">My strikes</h3><div id="strike-list"></div></div>
+                    <div class="sp-card"><h3 id="strike-h">My strikes</h3><div class="sp-meta">Strikes are issued by admins.</div><div id="strike-list"></div></div>
                 </div>
 
                 <div id="tab-roster" role="tabpanel" hidden>

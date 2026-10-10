@@ -6,8 +6,8 @@ Staff log in with Discord. Your Discord server's roles decide what each person c
 | Level | Who | Can do |
 | --- | --- | --- |
 | staff | Members with a role in `STAFF_ROLE_IDS` | Dashboard, announcements, LOA requests, clock in/out, their own tasks and strikes, the roster |
-| manager | Members with a role in `MANAGER_ROLE_IDS` | Everything above, plus approve/deny LOA, post announcements, assign tasks, issue strikes, see weekly duty hours |
-| admin | Members with a role in `ADMIN_ROLE_IDS`, or listed in `STAFF_ADMIN_USER_IDS` | Everything above, plus set ranks and notes, and the **admin page** (`/pages/staff-admin.html`): setup check, suspend members, end sessions, activity log, CSV exports, data tidy-up |
+| manager | Members with a role in `MANAGER_ROLE_IDS` | Everything above, plus approve/deny LOA, post announcements, assign tasks, see weekly duty hours |
+| admin | Members with a role in `ADMIN_ROLE_IDS`, or listed in `STAFF_ADMIN_USER_IDS` | Everything above, plus set ranks and notes, and the **admin page** (`/pages/staff-admin.html`): setup check, suspend members, **strikes**, **tasks** (admin tasks can't be deleted by managers), end sessions, **activity log**, CSV exports, data tidy-up. Staff can see their own strikes (read-only) in the portal |
 
 Everything is checked on the server for every request. Someone without the role gets nothing, even if they know the address.
 No staff data is stored in this public repo: it lives in Cloudflare D1.
@@ -15,7 +15,7 @@ No staff data is stored in this public repo: it lives in Cloudflare D1.
 ## 1. Create a separate database for staff data
 Keep this apart from the Server API database.
 1. Cloudflare dashboard > Storage & Databases > D1 SQL database > **Create database**. Name it `westbrook-staff`.
-2. Open it > **Console**, paste the whole of `staff-portal/schema.sql` and run it. (If you ran it before, run it again after an update: every line is `IF NOT EXISTS`, so it only adds the new tables.)
+2. Open it > **Console**, paste the whole of `staff-portal/schema.sql` and run it. (If you ran it before, run it again after an update: every line is `IF NOT EXISTS`, so it only adds the new tables. If you already created `staff_tasks` earlier, also run once: `ALTER TABLE staff_tasks ADD COLUMN admin_locked INTEGER NOT NULL DEFAULT 0;`)
 3. Go to Workers & Pages > your Pages project > Settings > Bindings > **Add > D1 database**. The variable name must be exactly `STAFF_DB`. Pick `westbrook-staff`. Add it for Production.
 
 (`STAFF_DB` is used whenever it exists. Only if it is missing does the portal fall back to the `SERVER_API_DB` binding, which you do not want.)

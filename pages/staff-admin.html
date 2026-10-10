@@ -177,6 +177,8 @@ a.sp-tile:hover { border-color: var(--blue-bright); }
                 <div class="sp-tabs" role="tablist" aria-label="Admin sections">
                     <button type="button" role="tab" data-tab="over" aria-selected="true">Overview</button>
                     <button type="button" role="tab" data-tab="members" aria-selected="false">Members</button>
+                    <button type="button" role="tab" data-tab="strikes" aria-selected="false">Strikes</button>
+                    <button type="button" role="tab" data-tab="tasks" aria-selected="false">Tasks</button>
                     <button type="button" role="tab" data-tab="sessions" aria-selected="false">Sessions</button>
                     <button type="button" role="tab" data-tab="log" aria-selected="false">Activity log</button>
                     <button type="button" role="tab" data-tab="data" aria-selected="false">Data</button>
@@ -192,6 +194,34 @@ a.sp-tile:hover { border-color: var(--blue-bright); }
                         <p class="sp-meta">Level comes from Discord roles. Suspending blocks portal login without touching Discord roles. You cannot suspend yourself or a protected admin.</p>
                         <div class="tw"><table><thead><tr><th>Name</th><th>Level</th><th>Status</th><th>Sessions</th><th>Strikes</th><th>Last login</th><th></th></tr></thead><tbody id="m-body"></tbody></table></div>
                     </div>
+                </div>
+
+                <div id="tab-strikes" role="tabpanel" hidden>
+                    <div class="sp-card">
+                        <h3>Issue a strike</h3>
+                        <div class="sp-row">
+                            <div><label for="strike-who">Member</label><select id="strike-who"></select></div>
+                            <div><label for="strike-days">Expires</label><select id="strike-days"><option value="30">After 30 days</option><option value="60">After 60 days</option><option value="90" selected>After 90 days</option><option value="180">After 180 days</option><option value="365">After 1 year</option><option value="0">Never</option></select></div>
+                        </div>
+                        <label for="strike-reason">Reason</label><textarea id="strike-reason" maxlength="400"></textarea>
+                        <button type="button" class="sp-btn bad" id="strike-send">Issue strike</button>
+                    </div>
+                    <div class="sp-card"><h3>All strikes</h3><div id="strike-list"></div></div>
+                </div>
+
+                <div id="tab-tasks" role="tabpanel" hidden>
+                    <div class="sp-card">
+                        <h3>New task</h3>
+                        <p class="sp-meta">Tasks you add here are locked: managers can see and complete them but cannot delete them.</p>
+                        <label for="task-title">Title</label><input type="text" id="task-title" maxlength="120">
+                        <label for="task-detail">Details (optional)</label><textarea id="task-detail" maxlength="1000"></textarea>
+                        <div class="sp-row">
+                            <div><label for="task-who">Assign to</label><select id="task-who"><option value="">Anyone</option></select></div>
+                            <div><label for="task-due">Due (optional)</label><input type="date" id="task-due"></div>
+                        </div>
+                        <button type="button" class="sp-btn" id="task-send">Add task</button>
+                    </div>
+                    <div class="sp-card"><h3>All tasks</h3><div id="task-list"></div></div>
                 </div>
 
                 <div id="tab-sessions" role="tabpanel" hidden>

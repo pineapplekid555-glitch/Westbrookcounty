@@ -33,7 +33,7 @@
             $("roster-edit-h").hidden = !isAdmin();
             $("rank-log-card").hidden = !isManager();
             $("task-form-card").hidden = !isManager();
-            $("strike-form-card").hidden = !isManager();
+            
             $("sp-admin-link").hidden = !isAdmin();
             openTab("dash");
         }).catch(function () { showLogin(); });
@@ -94,7 +94,7 @@
             if (d.manager) {
                 tiles.appendChild(tile(d.manager.pendingLoa, "LOA to review", "loa", d.manager.pendingLoa > 0));
                 tiles.appendChild(tile(d.manager.openTasks, "Open tasks (all)", "tasks"));
-                tiles.appendChild(tile(d.manager.activeStrikes, "Active strikes (all)", "strikes"));
+                if (d.manager.activeStrikes != null) tiles.appendChild(tile(d.manager.activeStrikes, "Active strikes (all)", "strikes"));
             }
             var live = tile("…", "Players in game");
             tiles.appendChild(live);
@@ -119,8 +119,8 @@
             d.onLeave.forEach(function (p) { away.appendChild(h("div", { class: "sp-item" }, h("strong", { text: p.name }), h("span", { class: "sp-meta", text: " away until " + day(p.end) }))); });
             d.upcomingLeave.forEach(function (p) { away.appendChild(h("div", { class: "sp-item" }, h("strong", { text: p.name }), h("span", { class: "sp-meta", text: " " + day(p.start) + " to " + day(p.end) }))); });
 
-            $("d-recent-card").hidden = !d.manager;
-            if (d.manager) {
+            $("d-recent-card").hidden = !(d.manager && d.manager.recent);
+            if (d.manager && d.manager.recent) {
                 var rc = clear($("d-recent"));
                 if (!d.manager.recent.length) rc.appendChild(empty("Nothing yet."));
                 d.manager.recent.forEach(function (r) { rc.appendChild(h("div", { class: "sp-item" }, h("strong", { text: r.by }), " " + r.action.replace(".", " ") + (r.detail ? " – " + r.detail : ""), h("div", { class: "sp-meta", text: SP.ago(r.at) }))); });
@@ -254,7 +254,8 @@
                 var meta = (t.assigneeName ? "For " + t.assigneeName : "Anyone can do this") + (t.due ? " · due " + day(t.due) : "") + " · added by " + t.createdBy + (done ? " · done by " + t.doneBy : "");
                 var item = h("div", { class: "sp-item" }, h("label", { class: "sp-check" }, check, h("strong", { text: t.title })), h("div", { class: "sp-meta", text: meta }));
                 if (t.detail) item.appendChild(h("div", { class: "sp-body", text: t.detail }));
-                if (isManager()) item.appendChild(h("div", { class: "sp-actions" }, h("button", { type: "button", class: "sp-btn bad sm", text: "Delete", onclick: function (e) {
+                if (t.adminLocked) item.appendChild(h("div", { class: "sp-meta", text: "Set by an admin" + (isAdmin() ? "" : " – only an admin can delete this") }));
+                if (isManager() && (!t.adminLocked || isAdmin())) item.appendChild(h("div", { class: "sp-actions" }, h("button", { type: "button", class: "sp-btn bad sm", text: "Delete", onclick: function (e) {
                     if (!confirm("Delete this task?")) return;
                     busy(e.target, function () { return api("/api/staff/tasks", { action: "delete", id: t.id }).then(loadTasks); }); } })));
                 box.appendChild(item);
@@ -271,35 +272,19 @@
 
     // ---- strikes
     function loadStrikes() {
-        $("strike-h").textContent = isManager() ? "All strikes" : "My strikes";
-        if (isManager()) fillMembers($("strike-who")).catch(fail);
         api("/api/staff/strikes").then(function (d) {
             var box = clear($("strike-list"));
-            if (!d.strikes.length) { box.appendChild(empty(isManager() ? "No strikes have been issued." : "You have no strikes. Keep it up!")); return; }
+            if (!d.strikes.length) { box.appendChild(empty("You have no strikes. Keep it up!")); return; }
             d.strikes.forEach(function (s) {
                 var status = s.revoked ? "revoked" : s.active ? "active" : "expired";
                 var item = h("div", { class: "sp-item" },
-                    h("div", null, h("strong", { text: (isManager() ? s.name + " · " : "") + "Strike #" + s.id }), " ", h("span", { class: "sp-st " + (s.active ? "denied" : "cancelled"), text: status })),
+                    h("div", null, h("strong", { text: "Strike #" + s.id }), " ", h("span", { class: "sp-st " + (s.active ? "denied" : "cancelled"), text: status })),
                     h("div", { class: "sp-body", text: s.reason }),
                     h("div", { class: "sp-meta", text: "Issued by " + s.issuedBy + " · " + when(s.issuedAt) + (s.expiresAt ? " · expires " + when(s.expiresAt) : " · never expires") + (s.revoked ? " · revoked by " + s.revokedBy + (s.revokedNote ? " (" + s.revokedNote + ")" : "") : "") }));
-                if (isManager() && !s.revoked && (s.discordId !== state.me.id || isAdmin())) {
-                    var note = h("input", { type: "text", maxlength: "200", placeholder: "Why revoke? (optional)", "aria-label": "Revoke note" });
-                    item.appendChild(h("div", { class: "sp-actions" }, h("button", { type: "button", class: "sp-btn alt sm", text: "Revoke", onclick: function (e) {
-                        busy(e.target, function () { return api("/api/staff/strikes", { action: "revoke", id: s.id, note: note.value }).then(loadStrikes); }); } }), note));
-                }
                 box.appendChild(item);
             });
         }).catch(fail);
     }
-    $("strike-send").addEventListener("click", function (e) {
-        if (!confirm("Issue this strike? The member will see it in their portal.")) return;
-        busy(e.target, function () {
-            return api("/api/staff/strikes", { action: "issue", discordId: $("strike-who").value, reason: $("strike-reason").value, days: Number($("strike-days").value) }).then(function () {
-                $("strike-reason").value = ""; say("Strike issued.", "good"); loadStrikes();
-            });
-        });
-    });
-
     // ---- roster
     function loadRoster() {
         api("/api/staff/roster").then(function (d) {

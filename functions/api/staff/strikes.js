@@ -1,7 +1,7 @@
 // /api/staff/strikes  - warnings given to staff.
-//   GET   staff: your own strikes. manager+: everyone's (add ?member=<discord id> for one person).
-//   POST  manager+: {action:"issue", discordId, reason, days}   days = 0 means it never expires (max 365 otherwise)
-//         manager+: {action:"revoke", id, note}
+//   GET   everyone: your own strikes. admin: everyone's (add ?member=<discord id> for one person).
+//   POST  admin only: {action:"issue", discordId, reason, days}   days = 0 means it never expires (max 365 otherwise)
+//         admin only: {action:"revoke", id, note}
 // You can only strike someone of a lower level than you (admins can strike anyone but themselves).
 import { requireStaff, audit, nowSec, ID_RE, LEVEL, levelOf, readBody } from "../../_lib/staffAuth.js";
 import { json, clean } from "../../_lib/common.js";
@@ -19,7 +19,7 @@ export async function onRequestGet(context) {
   const now = nowSec();
   let sql = "SELECT * FROM staff_strikes";
   const binds = [];
-  if (user.level < LEVEL.manager) { binds.push(user.id); sql += " WHERE discord_id = ?1"; }
+  if (user.level < LEVEL.admin) { binds.push(user.id); sql += " WHERE discord_id = ?1"; }
   else {
     const m = new URL(context.request.url).searchParams.get("member");
     if (m && ID_RE.test(m)) { binds.push(m); sql += " WHERE discord_id = ?1"; }
@@ -30,7 +30,7 @@ export async function onRequestGet(context) {
 }
 
 export async function onRequestPost(context) {
-  const auth = await requireStaff(context, LEVEL.manager);
+  const auth = await requireStaff(context, LEVEL.admin);
   if (auth.response) return auth.response;
   const { DB, user } = auth;
   const parsed = await readBody(context, 2048);

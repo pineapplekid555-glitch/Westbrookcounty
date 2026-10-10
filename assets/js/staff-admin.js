@@ -24,11 +24,11 @@
         }).catch(function () { show("sp-login"); });
     }
 
-    var TABS = ["over", "members", "sessions", "log", "data"];
+    var TABS = ["over", "members", "strikes", "tasks", "sessions", "log", "data"];
     function openTab(n) {
         Array.prototype.forEach.call(document.querySelectorAll(".sp-tabs button"), function (b) { b.setAttribute("aria-selected", b.getAttribute("data-tab") === n ? "true" : "false"); });
         TABS.forEach(function (t) { $("tab-" + t).hidden = t !== n; });
-        ({ over: loadOver, members: loadMembers, sessions: loadSessions, log: loadLog, data: function () {} })[n]();
+        ({ over: loadOver, members: loadMembers, strikes: loadStrikes, tasks: loadTasks, sessions: loadSessions, log: loadLog, data: function () {} })[n]();
     }
     Array.prototype.forEach.call(document.querySelectorAll(".sp-tabs button"), function (b) {
         b.addEventListener("click", function () { openTab(b.getAttribute("data-tab")); });
@@ -82,6 +82,74 @@
             });
         }).catch(fail);
     }
+
+    var roster = null;
+    function fillMembers(select, first) {
+        var get = roster ? Promise.resolve(roster) : api("/api/staff/roster").then(function (d) { roster = d.members; return roster; });
+        return get.then(function (ms) {
+            clear(select);
+            if (first) select.appendChild(h("option", { value: "", text: first }));
+            ms.forEach(function (m) { select.appendChild(h("option", { value: m.discordId, text: m.name })); });
+        });
+    }
+
+    function loadStrikes() {
+        fillMembers($("strike-who")).catch(fail);
+        api("/api/staff/strikes").then(function (d) {
+            var box = clear($("strike-list"));
+            if (!d.strikes.length) { box.appendChild(empty("No strikes have been issued.")); return; }
+            d.strikes.forEach(function (s) {
+                var status = s.revoked ? "revoked" : s.active ? "active" : "expired";
+                var item = h("div", { class: "sp-item" },
+                    h("div", null, h("strong", { text: s.name + " · Strike #" + s.id }), " ", h("span", { class: "sp-st " + (s.active ? "denied" : "cancelled"), text: status })),
+                    h("div", { class: "sp-body", text: s.reason }),
+                    h("div", { class: "sp-meta", text: "Issued by " + s.issuedBy + " · " + when(s.issuedAt) + (s.expiresAt ? " · expires " + when(s.expiresAt) : " · never expires") + (s.revoked ? " · revoked by " + s.revokedBy + (s.revokedNote ? " (" + s.revokedNote + ")" : "") : "") }));
+                if (!s.revoked) {
+                    var note = h("input", { type: "text", maxlength: "200", placeholder: "Why revoke? (optional)", "aria-label": "Revoke note" });
+                    item.appendChild(h("div", { class: "sp-actions" }, h("button", { type: "button", class: "sp-btn alt sm", text: "Revoke", onclick: function (e) {
+                        busy(e.target, function () { return api("/api/staff/strikes", { action: "revoke", id: s.id, note: note.value }).then(loadStrikes); }); } }), note));
+                }
+                box.appendChild(item);
+            });
+        }).catch(fail);
+    }
+    $("strike-send").addEventListener("click", function (e) {
+        if (!confirm("Issue this strike? The member will see it in their portal.")) return;
+        busy(e.target, function () {
+            return api("/api/staff/strikes", { action: "issue", discordId: $("strike-who").value, reason: $("strike-reason").value, days: Number($("strike-days").value) }).then(function () {
+                $("strike-reason").value = ""; say("Strike issued.", "good"); loadStrikes();
+            });
+        });
+    });
+
+    function loadTasks() {
+        fillMembers($("task-who"), "Anyone").catch(fail);
+        api("/api/staff/tasks").then(function (d) {
+            var box = clear($("task-list"));
+            if (!d.tasks.length) { box.appendChild(empty("No tasks.")); return; }
+            d.tasks.forEach(function (t) {
+                var done = t.status === "done";
+                var check = h("input", { type: "checkbox", "aria-label": "Mark done", onchange: function (e) {
+                    api("/api/staff/tasks", { action: done ? "reopen" : "done", id: t.id }).then(loadTasks).catch(function (err) { say(err.message, "err"); e.target.checked = done; });
+                } });
+                check.checked = done;
+                var meta = (t.assigneeName ? "For " + t.assigneeName : "Anyone can do this") + (t.due ? " · due " + SP.day(t.due) : "") + " · added by " + t.createdBy + (t.adminLocked ? " (admin, locked)" : "") + (done ? " · done by " + t.doneBy : "");
+                var item = h("div", { class: "sp-item" }, h("label", { class: "sp-check" }, check, h("strong", { text: t.title })), h("div", { class: "sp-meta", text: meta }));
+                if (t.detail) item.appendChild(h("div", { class: "sp-body", text: t.detail }));
+                item.appendChild(h("div", { class: "sp-actions" }, h("button", { type: "button", class: "sp-btn bad sm", text: "Delete", onclick: function (e) {
+                    if (!confirm("Delete this task?")) return;
+                    busy(e.target, function () { return api("/api/staff/tasks", { action: "delete", id: t.id }).then(loadTasks); }); } })));
+                box.appendChild(item);
+            });
+        }).catch(fail);
+    }
+    $("task-send").addEventListener("click", function (e) {
+        busy(e.target, function () {
+            return api("/api/staff/tasks", { action: "create", title: $("task-title").value, detail: $("task-detail").value, assigneeId: $("task-who").value, due: $("task-due").value }).then(function () {
+                $("task-title").value = ""; $("task-detail").value = ""; $("task-due").value = ""; say("Task added.", "good"); loadTasks();
+            });
+        });
+    });
 
     function loadSessions() {
         api("/api/staff/admin/sessions").then(function (d) {
