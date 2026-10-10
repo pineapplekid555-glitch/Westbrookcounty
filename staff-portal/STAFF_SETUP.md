@@ -60,3 +60,19 @@ Open `/pages/staff.html`, press **Log in with Discord**, approve, and you should
   `DELETE FROM staff_sessions WHERE discord_id = 'THEIR_DISCORD_ID';`
 - Discord login only works on the real domain (the redirect address above). Preview deployments will say the redirect is invalid.
 - Staff appear in the roster the first time they log in.
+
+## Moderation (look-ups, bans, anti-cheat bans on the website)
+Page: `/pages/staff-mod.html` (linked from the portal). Everyone on staff can **look players up** and **see anti-cheat bans**.
+Who can **ban, unban, kick, warn and message all servers** is set with the Cloudflare variable `MOD_ACTION_LEVEL`
+(`1` = all staff, `2` = managers and admins - the default, `3` = admins only).
+
+1. Run `staff-portal/schema.sql` again in the D1 console (adds the `mod_*` tables; safe to re-run).
+2. Optional Cloudflare variable `MOD_PROTECTED_USER_IDS`: Roblox user ids (comma separated) that can never be banned or kicked from the website, e.g. the owner.
+3. In Roblox Studio, put `roblox/ModerationBridge.server.lua` in a **Script** in ServerScriptService. Edit the "YOUR GAME" part at the top
+   (money, XP, vehicles and gamepasses). Turn on Game Settings > Security > Allow HTTP Requests. It uses the `westbrook_api_key` secret you already have.
+   Paste your `PRIVATE_API_PATH` value into `PRIVATE_PATH` (leave it empty if you never set `PRIVATE_API_PATH`).
+4. Publish the game. Players appear on the Look up tab after they join.
+
+Anti-cheat bans (from the existing anti-cheat report) show up automatically on the **Anti-cheat bans** tab with the AI's second opinion.
+Website commands reach the game within about 10 seconds and the **Activity** tab shows whether the game carried them out.
+Bans use Roblox's own ban system, so they work in every server and for offline players.

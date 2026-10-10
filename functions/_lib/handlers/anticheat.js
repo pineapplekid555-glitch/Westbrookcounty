@@ -1,6 +1,8 @@
 import { json, checkAuth, readJson, clean, storeResult, HttpError } from "../common.js";
 import { askAI } from "../ai.js";
 import { buildAntiCheatPrompt } from "../guidelines.js";
+import { getDB, nowSec } from "../staffAuth.js";
+import { recordAction, rememberName } from "../moderation.js";
 
 // POST /api/anticheat/report
 // Called by the Roblox game server every time the anti-cheat flags a player:
@@ -41,6 +43,24 @@ function discordEmbed(report, result) {
   };
 }
 
+// Anti-cheat bans also appear on the staff website (Moderation page) with the AI's second opinion.
+function logAutoBan(context, report, result) {
+  if (report.outcome !== "auto_ban") return;
+  const DB = getDB(context.env);
+  if (!DB) return;
+  const now = nowSec();
+  context.waitUntil(
+    (async () => {
+      await rememberName(DB, report.player.userId, report.player.username, now);
+      await recordAction(DB, {
+        userId: report.player.userId, username: report.player.username, type: "ban", reason: report.violationType,
+        notes: report.details, source: "auto", byName: "Anti-cheat",
+        aiVerdict: result.reviewed === false ? "" : result.verdict, aiReason: result.reviewed === false ? "" : result.reason
+      }, now);
+    })().catch(() => {})
+  );
+}
+
 export async function handle(context) {
   const denied = checkAuth(context.request, context.env);
   if (denied) return denied;
@@ -79,6 +99,7 @@ export async function handle(context) {
 
   const reviewId = crypto.randomUUID();
   const finish = (result, extra = {}) => {
+    logAutoBan(context, report, result);
     storeResult(context, "anticheat", reviewId, { reviewId, report, result, ...extra, at: new Date().toISOString() });
     return json({ success: true, reviewId, ...result, ...extra });
   };

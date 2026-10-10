@@ -28,10 +28,6 @@
             $("sp-name").textContent = me.name;
             var badge = $("sp-level"); badge.textContent = me.levelName; badge.className = "sp-badge " + me.levelName;
             $("ann-form-card").hidden = !isManager();
-            $("loa-all-card").hidden = !isManager();
-            $("roster-notes-h").hidden = !isManager();
-            $("roster-edit-h").hidden = !isAdmin();
-            $("rank-log-card").hidden = !isManager();
             $("task-form-card").hidden = !isManager();
             
             $("sp-admin-link").hidden = !isAdmin();
@@ -42,8 +38,8 @@
     // ---- tabs
     function openTab(name) {
         Array.prototype.forEach.call(document.querySelectorAll(".sp-tabs button"), function (b) { b.setAttribute("aria-selected", b.getAttribute("data-tab") === name ? "true" : "false"); });
-        ["dash", "ann", "loa", "duty", "tasks", "strikes", "roster"].forEach(function (t) { $("tab-" + t).hidden = t !== name; });
-        ({ dash: loadDash, ann: loadAnnouncements, loa: loadLoa, duty: loadDuty, tasks: loadTasks, strikes: loadStrikes, roster: loadRoster })[name]();
+        ["dash", "ann", "loa", "duty", "tasks", "strikes"].forEach(function (t) { $("tab-" + t).hidden = t !== name; });
+        ({ dash: loadDash, ann: loadAnnouncements, loa: loadLoa, duty: loadDuty, tasks: loadTasks, strikes: loadStrikes })[name]();
     }
     Array.prototype.forEach.call(document.querySelectorAll(".sp-tabs button"), function (b) {
         b.addEventListener("click", function () { openTab(b.getAttribute("data-tab")); });
@@ -74,7 +70,8 @@
     // ---- dashboard
     function tile(n, label, goto, alert) {
         var el = h(goto ? "a" : "div", { class: "sp-tile" + (alert ? " alert" : ""), href: goto ? "#" : null }, h("div", { class: "n", text: String(n) }), h("div", { class: "l", text: label }));
-        if (goto) el.addEventListener("click", function (e) { e.preventDefault(); goTab(goto)(); });
+        if (goto && goto.charAt(0) === "/") el.setAttribute("href", goto);
+        else if (goto) el.addEventListener("click", function (e) { e.preventDefault(); goTab(goto)(); });
         return el;
     }
     function loadDash() {
@@ -87,14 +84,14 @@
             var tiles = $("d-tiles"); clear(tiles);
             tiles.appendChild(tile(d.counts.onDuty, "On duty now", "duty"));
             tiles.appendChild(tile(d.counts.onLeave, "On leave today", "loa"));
-            tiles.appendChild(tile(d.counts.staff, "Staff members", "roster"));
+            tiles.appendChild(tile(d.counts.staff, "Staff members"));
             tiles.appendChild(tile(d.mine.openTasks, "My open tasks", "tasks", d.mine.openTasks > 0));
             if (d.mine.activeStrikes) tiles.appendChild(tile(d.mine.activeStrikes, "My active strikes", "strikes", true));
             if (d.mine.pendingLoa) tiles.appendChild(tile(d.mine.pendingLoa, "My LOA waiting", "loa"));
             if (d.manager) {
-                tiles.appendChild(tile(d.manager.pendingLoa, "LOA to review", "loa", d.manager.pendingLoa > 0));
+                if (d.manager.pendingLoa != null) tiles.appendChild(tile(d.manager.pendingLoa, "LOA to review", "/pages/staff-admin.html", d.manager.pendingLoa > 0));
                 tiles.appendChild(tile(d.manager.openTasks, "Open tasks (all)", "tasks"));
-                if (d.manager.activeStrikes != null) tiles.appendChild(tile(d.manager.activeStrikes, "Active strikes (all)", "strikes"));
+                if (d.manager.activeStrikes != null) tiles.appendChild(tile(d.manager.activeStrikes, "Active strikes (all)", "/pages/staff-admin.html"));
             }
             var live = tile("…", "Players in game");
             tiles.appendChild(live);
@@ -119,12 +116,6 @@
             d.onLeave.forEach(function (p) { away.appendChild(h("div", { class: "sp-item" }, h("strong", { text: p.name }), h("span", { class: "sp-meta", text: " away until " + day(p.end) }))); });
             d.upcomingLeave.forEach(function (p) { away.appendChild(h("div", { class: "sp-item" }, h("strong", { text: p.name }), h("span", { class: "sp-meta", text: " " + day(p.start) + " to " + day(p.end) }))); });
 
-            $("d-recent-card").hidden = !(d.manager && d.manager.recent);
-            if (d.manager && d.manager.recent) {
-                var rc = clear($("d-recent"));
-                if (!d.manager.recent.length) rc.appendChild(empty("Nothing yet."));
-                d.manager.recent.forEach(function (r) { rc.appendChild(h("div", { class: "sp-item" }, h("strong", { text: r.by }), " " + r.action.replace(".", " ") + (r.detail ? " – " + r.detail : ""), h("div", { class: "sp-meta", text: SP.ago(r.at) }))); });
-            }
         }).catch(fail);
     }
 
@@ -189,18 +180,8 @@
             var own = d.requests.filter(function (r) { return r.discordId === state.me.id; });
             if (!own.length) mine.appendChild(empty("You have no requests."));
             own.forEach(function (r) { mine.appendChild(loaItem(r, { cancel: true })); });
-            if (isManager()) loadAllLoa();
         }).catch(fail);
     }
-    function loadAllLoa() {
-        var f = $("loa-filter").value;
-        api("/api/staff/loa" + (f ? "?status=" + encodeURIComponent(f) : "")).then(function (d) {
-            var box = clear($("loa-all"));
-            if (!d.requests.length) box.appendChild(empty("Nothing here."));
-            d.requests.forEach(function (r) { box.appendChild(loaItem(r, { showName: true, decide: r.discordId !== state.me.id || isAdmin() })); });
-        }).catch(fail);
-    }
-    $("loa-filter").addEventListener("change", loadAllLoa);
     $("loa-send").addEventListener("click", function (e) {
         busy(e.target, function () {
             return api("/api/staff/loa", { action: "create", start: $("loa-start").value, end: $("loa-end").value, reason: $("loa-reason").value }).then(function () {
@@ -285,33 +266,6 @@
             });
         }).catch(fail);
     }
-    // ---- roster
-    function loadRoster() {
-        api("/api/staff/roster").then(function (d) {
-            state.roster = d.members;
-            var body = clear($("roster-body"));
-            d.members.forEach(function (m) {
-                var rank = h("input", { type: "text", maxlength: "40", value: m.rank || "", "aria-label": "Rank for " + m.name });
-                var notes = h("input", { type: "text", maxlength: "300", value: m.notes || "", "aria-label": "Notes for " + m.name });
-                var row = h("tr", null,
-                    h("td", null, h("span", { class: "sp-who" }, SP.avatar(m.discordId, m.avatar), m.name)),
-                    h("td", null, isAdmin() ? rank : (m.rank || "—")),
-                    h("td", { text: when(m.lastLogin) }));
-                if (isManager()) row.appendChild(h("td", null, isAdmin() ? notes : (m.notes || "")));
-                if (isAdmin()) row.appendChild(h("td", null, h("button", { type: "button", class: "sp-btn sm", text: "Save", onclick: function (e) {
-                    busy(e.target, function () { return api("/api/staff/roster", { discordId: m.discordId, rank: rank.value, notes: notes.value }).then(function () { say("Saved.", "good"); loadRoster(); }); }); } })));
-                body.appendChild(row);
-            });
-            if (isManager()) {
-                var log = clear($("rank-log"));
-                if (!d.history.length) log.appendChild(empty("No rank changes yet."));
-                d.history.forEach(function (l) {
-                    log.appendChild(h("div", { class: "sp-item" }, h("strong", { text: l.name }), " " + (l.from || "none") + " → " + (l.to || "none"), h("div", { class: "sp-meta", text: "by " + l.by + " · " + when(l.at) })));
-                });
-            }
-        }).catch(fail);
-    }
-
     // ---- logout
     $("sp-logout").addEventListener("click", function (e) {
         busy(e.target, function () {

@@ -1,5 +1,5 @@
 // /api/staff/roster  - everyone who has logged in, with their rank.
-//   GET   staff+: name, rank, last login (manager+ also see notes and the rank history).
+//   GET   staff+: name, rank, last login (admin also sees notes and the rank history).
 //   POST  admin: {discordId, rank, notes}  sets a member's rank/notes. Rank changes are logged.
 import { requireStaff, audit, nowSec, ID_RE, LEVEL } from "../../_lib/staffAuth.js";
 import { json, readJson, clean, HttpError } from "../../_lib/common.js";
@@ -8,7 +8,7 @@ export async function onRequestGet(context) {
   const auth = await requireStaff(context);
   if (auth.response) return auth.response;
   const { DB, user } = auth;
-  const manager = user.level >= LEVEL.manager;
+  const manager = user.level >= LEVEL.admin;
   const rows = (await DB.prepare("SELECT * FROM staff_roster ORDER BY name COLLATE NOCASE LIMIT 500").all()).results || [];
   const out = { success: true, members: rows.map((r) => ({
     discordId: r.discord_id, name: r.name, avatar: r.avatar, rank: r.rank, lastLogin: r.last_login,

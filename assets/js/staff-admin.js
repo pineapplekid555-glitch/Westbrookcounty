@@ -24,11 +24,11 @@
         }).catch(function () { show("sp-login"); });
     }
 
-    var TABS = ["over", "members", "strikes", "tasks", "sessions", "log", "data"];
+    var TABS = ["over", "loa", "roster", "members", "strikes", "tasks", "sessions", "log", "data"];
     function openTab(n) {
         Array.prototype.forEach.call(document.querySelectorAll(".sp-tabs button"), function (b) { b.setAttribute("aria-selected", b.getAttribute("data-tab") === n ? "true" : "false"); });
         TABS.forEach(function (t) { $("tab-" + t).hidden = t !== n; });
-        ({ over: loadOver, members: loadMembers, strikes: loadStrikes, tasks: loadTasks, sessions: loadSessions, log: loadLog, data: function () {} })[n]();
+        ({ over: loadOver, loa: loadLoa, roster: loadRoster, members: loadMembers, strikes: loadStrikes, tasks: loadTasks, sessions: loadSessions, log: loadLog, data: function () {} })[n]();
     }
     Array.prototype.forEach.call(document.querySelectorAll(".sp-tabs button"), function (b) {
         b.addEventListener("click", function () { openTab(b.getAttribute("data-tab")); });
@@ -79,6 +79,53 @@
                     h("td", { text: String(m.strikes) }),
                     h("td", { text: when(m.lastLogin) }),
                     actions));
+            });
+        }).catch(fail);
+    }
+
+    function loadLoa() {
+        var f = $("loa-filter").value;
+        api("/api/staff/loa" + (f ? "?status=" + encodeURIComponent(f) : "")).then(function (d) {
+            var box = clear($("loa-all"));
+            if (!d.requests.length) box.appendChild(empty("Nothing here."));
+            d.requests.forEach(function (r) {
+                var item = h("div", { class: "sp-item" },
+                    h("div", null, h("strong", { text: r.name + " · " + SP.day(r.start) + " to " + SP.day(r.end) }), " ", h("span", { class: "sp-st " + r.status, text: r.status })),
+                    h("div", { class: "sp-body", text: r.reason }));
+                if (r.status !== "pending" && r.decidedBy) item.appendChild(h("div", { class: "sp-meta", text: r.status + " by " + r.decidedBy + (r.decidedAt ? " · " + when(r.decidedAt) : "") + (r.note ? " · “" + r.note + "”" : "") }));
+                if (r.status === "pending") {
+                    var note = h("input", { type: "text", maxlength: "300", placeholder: "Note (optional)", "aria-label": "Note" });
+                    var actions = h("div", { class: "sp-actions" });
+                    ["approved", "denied"].forEach(function (decision) {
+                        actions.appendChild(h("button", { type: "button", class: "sp-btn sm " + (decision === "denied" ? "bad" : ""), text: decision === "approved" ? "Approve" : "Deny", onclick: function (e) {
+                            busy(e.target, function () { return api("/api/staff/loa", { action: "decide", id: r.id, decision: decision, note: note.value }).then(loadLoa); }); } }));
+                    });
+                    actions.appendChild(note);
+                    item.appendChild(actions);
+                }
+                box.appendChild(item);
+            });
+        }).catch(fail);
+    }
+    $("loa-filter").addEventListener("change", loadLoa);
+
+    function loadRoster() {
+        api("/api/staff/roster").then(function (d) {
+            roster = d.members;
+            var body = clear($("roster-body"));
+            d.members.forEach(function (m) {
+                var rank = h("input", { type: "text", maxlength: "40", value: m.rank || "", "aria-label": "Rank for " + m.name });
+                var notes = h("input", { type: "text", maxlength: "300", value: m.notes || "", "aria-label": "Notes for " + m.name });
+                body.appendChild(h("tr", null,
+                    h("td", null, h("span", { class: "sp-who" }, SP.avatar(m.discordId, m.avatar), m.name)),
+                    h("td", null, rank), h("td", { text: when(m.lastLogin) }), h("td", null, notes),
+                    h("td", null, h("button", { type: "button", class: "sp-btn sm", text: "Save", onclick: function (e) {
+                        busy(e.target, function () { return api("/api/staff/roster", { discordId: m.discordId, rank: rank.value, notes: notes.value }).then(function () { say("Saved.", "good"); loadRoster(); }); }); } }))));
+            });
+            var log = clear($("rank-log"));
+            if (!d.history.length) log.appendChild(empty("No rank changes yet."));
+            d.history.forEach(function (l) {
+                log.appendChild(h("div", { class: "sp-item" }, h("strong", { text: l.name }), " " + (l.from || "none") + " → " + (l.to || "none"), h("div", { class: "sp-meta", text: "by " + l.by + " · " + when(l.at) })));
             });
         }).catch(fail);
     }

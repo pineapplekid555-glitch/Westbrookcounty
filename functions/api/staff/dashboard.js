@@ -42,16 +42,12 @@ export async function onRequestGet(context) {
   };
 
   if (user.level >= LEVEL.manager) {
-    out.manager = {
-      pendingLoa: await count(DB, "SELECT COUNT(*) AS n FROM staff_loa WHERE status = 'pending'"),
-      openTasks: await count(DB, "SELECT COUNT(*) AS n FROM staff_tasks WHERE status = 'open'"),
-    };
+    out.manager = { openTasks: await count(DB, "SELECT COUNT(*) AS n FROM staff_tasks WHERE status = 'open'") };
   }
   if (user.level >= LEVEL.admin) {
-    // strikes and the activity log are admin-only
+    // LOA review and strikes live on the admin page
+    out.manager.pendingLoa = await count(DB, "SELECT COUNT(*) AS n FROM staff_loa WHERE status = 'pending'");
     out.manager.activeStrikes = await count(DB, "SELECT COUNT(*) AS n FROM staff_strikes WHERE revoked = 0 AND (expires_at IS NULL OR expires_at > ?1)", now);
-    out.manager.recent = ((await DB.prepare("SELECT at, actor_name, action, detail FROM staff_audit WHERE action NOT LIKE 'login%' ORDER BY id DESC LIMIT 8").all()).results || [])
-      .map((r) => ({ at: r.at, by: r.actor_name, action: r.action, detail: r.detail }));
   }
   return json(out);
 }

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Moderation | Westbrook County</title>
+
+    <meta name="description" content="Westbrook County staff portal.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#07090d">
+
+    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    >
+
+    <link rel="stylesheet" href="/assets/css/styles.css?v=20261009-2">
+</head>
+
+<body>
+
+<header class="site-header">
+
+    <div class="container header-inner">
+
+        <a href="/" class="brand">
+            <img src="/assets/images/westbrook-logo-360.png" alt="" width="66" height="44">
+            <span data-site-name>Westbrook County</span>
+        </a>
+
+        <div class="header-right">
+
+            <nav class="navigation" data-navigation aria-label="Main">
+                <a href="/">Home</a>
+                <a href="/pages/updates.html">Updates</a>
+                <a href="/pages/liveries.html">Custom Liveries</a>
+                <a href="/pages/server-api.html">Server API</a>
+                <a href="#" data-discord target="_blank" rel="noopener noreferrer">Discord</a>
+            </nav>
+
+            <a
+                href="#"
+                class="button button-primary header-play"
+                data-roblox
+                target="_blank"
+                rel="noopener noreferrer"
+            >Play now</a>
+
+            <button
+                class="menu-button"
+                type="button"
+                data-menu-button
+                aria-label="Open navigation menu"
+                aria-expanded="false"
+            >MENU</button>
+
+        </div>
+
+    </div>
+
+</header>
+
+<main>
+
+    <section class="page-hero">
+
+        <img class="page-hero-bg" src="/assets/images/gallery/dusk-patrol.jpg" alt="">
+
+        <div class="container">
+
+            <div class="eyebrow">Staff only</div>
+
+            <h1>Moderation</h1>
+
+            <p>Look players up, ban, unban, kick and warn, and review anti-cheat bans.</p>
+
+        </div>
+
+    </section>
+
+    <section class="page-section">
+
+        <div class="container sp">
+
+<style>
+.sp-tabs.small{margin-bottom:12px}
+.sp-ok{color:#4fd08f;font-weight:700}.sp-no{color:var(--red-bright);font-weight:700}
+.sp-pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:700;text-transform:uppercase;background:var(--panel-2)}.sp-pill.bad{background:rgba(229,50,45,.3)}.sp-pill.ok{background:rgba(31,143,95,.3)}.sp-pill.warn{background:rgba(255,190,40,.28)}
+.sp-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0}.sp-stat{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px}.sp-stat .k{color:var(--text-dim);font-size:12px;letter-spacing:.06em;text-transform:uppercase}.sp-stat .v{font-weight:700;font-size:1.1rem;overflow-wrap:anywhere}
+.sp-tags{display:flex;gap:6px;flex-wrap:wrap;max-height:180px;overflow:auto}.sp-tag{background:var(--bg-2);border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:13px}
+.sp-banner{border:1px solid var(--red);background:rgba(229,50,45,.15);border-radius:var(--radius-sm);padding:10px 14px;margin:12px 0}
+.sp-res{display:block;width:100%;text-align:left;background:var(--bg-2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-top:8px;font:inherit;cursor:pointer}.sp-res:hover{border-color:var(--blue-bright)}
+.sp-inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sp-inline select,.sp-inline input[type=text]{width:auto!important}
+.sp { max-width: 980px; margin: 0 auto; }
+.sp [hidden] { display: none !important; }
+.sp-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 18px; }
+.sp-card h3 { margin: 0 0 10px; font-family: var(--font-head); font-size: 1.5rem; }
+.sp-login { text-align: center; padding: 40px 22px; }
+.sp-login p { color: var(--text-soft); max-width: 520px; margin: 10px auto 22px; }
+.sp-msg { margin: 0 0 16px; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--panel-2); }
+.sp-msg.err { border-color: var(--red); }
+.sp-msg.good { border-color: #1f8f5f; }
+.sp-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; margin-bottom: 14px; }
+.sp-who { display: flex; align-items: center; gap: 10px; }
+.sp-who img, .sp-av { width: 36px; height: 36px; border-radius: 50%; background: var(--panel-2); object-fit: cover; }
+.sp-badge { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(47, 107, 255, 0.25); }
+.sp-badge.manager { background: rgba(229, 50, 45, 0.28); }
+.sp-badge.admin { background: rgba(255, 190, 40, 0.28); }
+.sp-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+.sp-tabs button { background: none; color: var(--text-soft); border: 1px solid transparent; border-radius: 999px; padding: 8px 16px; font: inherit; font-weight: 600; cursor: pointer; }
+.sp-tabs button:hover { color: var(--text); border-color: var(--border-strong); }
+.sp-tabs button[aria-selected="true"] { background: rgba(47, 107, 255, 0.2); color: var(--text); border-color: var(--blue-bright); }
+.sp label { display: block; margin: 12px 0 4px; font-size: 14px; color: var(--text-dim); font-weight: 600; }
+.sp input[type=text], .sp input[type=date], .sp textarea, .sp select { width: 100%; padding: 10px 12px; background: var(--bg-2); color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font: inherit; }
+.sp textarea { min-height: 90px; resize: vertical; }
+.sp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sp-check { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; color: var(--text-soft); font-weight: 400; }
+.sp-check input { width: auto; }
+.sp-btn { display: inline-block; margin-top: 14px; padding: 10px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--blue); color: #fff; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; }
+.sp-btn.alt { background: var(--panel-2); }
+.sp-btn.bad { background: var(--red); }
+.sp-btn.sm { margin: 0; padding: 5px 12px; font-size: 14px; }
+.sp-btn:disabled { opacity: 0.55; cursor: wait; }
+.sp-item { border-top: 1px solid var(--border); padding: 14px 0; }
+.sp-item:first-child { border-top: 0; }
+.sp-item h4 { margin: 0 0 4px; font-size: 1.1rem; }
+.sp-meta { color: var(--text-dim); font-size: 14px; }
+.sp-body { white-space: pre-wrap; color: var(--text-soft); margin: 8px 0; overflow-wrap: anywhere; }
+.sp-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; align-items: center; }
+.sp-actions input[type=text] { width: 220px; max-width: 100%; padding: 5px 10px; }
+.sp-st { font-weight: 700; text-transform: capitalize; }
+.sp-st.approved { color: #4fd08f; } .sp-st.denied { color: var(--red-bright); } .sp-st.pending { color: #ffd166; } .sp-st.cancelled { color: var(--text-dim); }
+.sp-empty { color: var(--text-dim); padding: 8px 0; }
+.sp table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.sp th, .sp td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.sp th { color: var(--text-dim); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+.sp .tw { overflow-x: auto; }
+.sp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.sp-tile { display: block; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-decoration: none; color: inherit; }
+a.sp-tile:hover { border-color: var(--blue-bright); }
+.sp-tile .n { font-family: var(--font-head); font-size: 2.4rem; line-height: 1; font-weight: 700; }
+.sp-tile .l { color: var(--text-dim); font-size: 14px; margin-top: 4px; }
+.sp-tile.alert .n { color: #ffd166; }
+.sp-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.sp-hero { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.sp-hero h3 { margin: 0; }
+.sp-clock { font-size: 1.05rem; padding: 14px 26px; margin: 0; }
+.sp-clock.on { background: var(--red); }
+.sp-bar-row { display: grid; grid-template-columns: 150px 1fr 80px auto; gap: 10px; align-items: center; padding: 6px 0; }
+.sp-track { height: 10px; background: var(--bg-2); border-radius: 999px; overflow: hidden; }
+.sp-fill { height: 100%; background: var(--blue-bright); border-radius: 999px; }
+.sp-live { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #4fd08f; margin-right: 8px; }
+.sp-link { color: var(--blue-bright); text-decoration: underline; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+@media (max-width: 640px) { .sp-row { grid-template-columns: 1fr; } .sp-bar-row { grid-template-columns: 110px 1fr 70px; } .sp-bar-row > :last-child { grid-column: 1 / -1; } }
+</style>
+            <div id="sp-msg" class="sp-msg" hidden></div>
+
+            <div id="sp-login" class="sp-card sp-login" hidden>
+                <h3>Staff login</h3>
+                <p>Log in with Discord to use the moderation tools.</p>
+                <a class="sp-btn" href="/api/staff/login">Log in with Discord</a>
+            </div>
+
+            <div id="sp-app" hidden>
+                <div class="sp-bar">
+                    <div class="sp-who"><span id="sp-av"></span><div><strong id="sp-name"></strong> <span id="sp-level" class="sp-badge"></span></div></div>
+                    <div class="sp-actions"><a href="/pages/staff.html" class="sp-btn alt sm">Staff portal</a><a href="/pages/staff-admin.html" id="sp-admin-link" class="sp-btn alt sm" hidden>Admin page</a><button type="button" id="sp-logout" class="sp-btn alt sm">Log out</button></div>
+                </div>
+
+                <div class="sp-tabs" role="tablist" aria-label="Moderation sections">
+                    <button type="button" role="tab" data-tab="look" aria-selected="true">Look up</button>
+                    <button type="button" role="tab" data-tab="auto" aria-selected="false">Anti-cheat bans</button>
+                    <button type="button" role="tab" data-tab="bans" aria-selected="false">Banned now</button>
+                    <button type="button" role="tab" data-tab="act" aria-selected="false">Take action</button>
+                    <button type="button" role="tab" data-tab="log" aria-selected="false">Activity</button>
+                </div>
+
+                <div id="tab-look" role="tabpanel">
+                    <div class="sp-card">
+                        <h3>Look up a player</h3>
+                        <div class="sp-inline"><input type="text" id="q" maxlength="40" placeholder="Roblox username, display name or user id" aria-label="Search for a player" style="min-width:260px"><button type="button" class="sp-btn sm" id="q-go">Search</button></div>
+                        <p class="sp-meta">Players appear here after they have joined the game. You can also paste any Roblox user id.</p>
+                        <div id="q-res"></div>
+                    </div>
+                    <div id="profile" hidden></div>
+                </div>
+
+                <div id="tab-auto" role="tabpanel" hidden>
+                    <div class="sp-card"><h3>Anti-cheat bans</h3>
+                        <p class="sp-meta">Automatic bans from the game, with the AI's second opinion. Check them, then mark them reviewed or unban.</p>
+                        <div id="auto-list"></div>
+                    </div>
+                </div>
+
+                <div id="tab-bans" role="tabpanel" hidden>
+                    <div class="sp-card"><h3>Banned now</h3><div id="bans-list"></div></div>
+                </div>
+
+                <div id="tab-act" role="tabpanel" hidden>
+                    <div class="sp-card" id="act-card">
+                        <h3>Take action</h3>
+                        <div class="sp-row">
+                            <div><label for="a-user">Player (username or user id)</label><input type="text" id="a-user" maxlength="40"></div>
+                            <div><label for="a-type">Action</label><select id="a-type"><option value="ban">Ban</option><option value="unban">Unban</option><option value="kick">Kick</option><option value="warn">Warn</option><option value="note">Add a note</option></select></div>
+                        </div>
+                        <div id="a-len-row"><label for="a-days">Ban length</label>
+                            <select id="a-days"><option value="1">1 day</option><option value="3">3 days</option><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option><option value="90">90 days</option><option value="365">1 year</option><option value="0" selected>Permanent</option></select></div>
+                        <label for="a-reason" id="a-reason-l">Reason (the player sees this)</label><textarea id="a-reason" maxlength="300"></textarea>
+                        <div id="a-notes-row"><label for="a-notes">Internal notes (staff only, optional)</label><textarea id="a-notes" maxlength="300"></textarea></div>
+                        <button type="button" class="sp-btn bad" id="a-go">Ban</button>
+                    </div>
+                    <div class="sp-card" id="ann-card">
+                        <h3>Message every server</h3>
+                        <label for="g-msg">Message</label><input type="text" id="g-msg" maxlength="200">
+                        <button type="button" class="sp-btn" id="g-go">Send</button>
+                    </div>
+                    <div class="sp-card" id="noact" hidden><h3>View only</h3><p class="sp-meta">Your level can look people up and add notes. Ask an admin if you need to ban or kick.</p></div>
+                </div>
+
+                <div id="tab-log" role="tabpanel" hidden>
+                    <div class="sp-card"><h3>Waiting for the game</h3><p class="sp-meta">Commands go to the game within about 10 seconds.</p><div id="queue-list"></div></div>
+                    <div class="sp-card"><h3>Recent actions</h3><div id="actions-list"></div></div>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer class="site-footer">
+
+    <div class="container">
+
+        <div class="footer-top">
+
+            <a href="/" class="footer-brand">
+                <img src="/assets/images/westbrook-logo-360.png" alt="" width="66" height="44">
+                <span>Westbrook County</span>
+            </a>
+
+            <nav class="footer-links" aria-label="Footer">
+                <a href="/">Home</a>
+                <a href="/pages/updates.html">Updates</a>
+                <a href="/pages/liveries.html">Custom Liveries</a>
+                <a href="/pages/server-api.html">Server API</a>
+                <a href="#" data-discord target="_blank" rel="noopener noreferrer">Discord</a>
+                <a href="#" data-roblox target="_blank" rel="noopener noreferrer">Play</a>
+            </nav>
+
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2026 Westbrook County</div>
+            <div>Built for the Westbrook County community.</div>
+        </div>
+
+    </div>
+
+</footer>
+
+
+<script src="/assets/js/content.js?v=20261009-2"></script>
+<script src="/assets/js/app.js?v=20261009-2"></script>
+<script src="/assets/js/staff-common.js?v=3"></script>
+<script src="/assets/js/staff-mod.js?v=1"></script>
+
+</body>
+</html>

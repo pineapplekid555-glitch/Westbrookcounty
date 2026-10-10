@@ -1,8 +1,8 @@
 // /api/staff/loa  - leave of absence requests.
-//   GET   staff: own requests. manager+: everyone's (add ?status=pending|approved|denied|cancelled).
+//   GET   staff: own requests. admin: everyone's (add ?status=pending|approved|denied|cancelled).
 //   POST  {action:"create", start, end, reason}   any staff
 //         {action:"cancel", id}                    the requester, while pending or approved
-//         {action:"decide", id, decision:"approved"|"denied", note}   manager+ (not on your own request, unless admin)
+//         {action:"decide", id, decision:"approved"|"denied", note}   admin only (done from the admin page)
 import { requireStaff, audit, nowSec, validDate, LEVEL } from "../../_lib/staffAuth.js";
 import { json, readJson, clean, HttpError } from "../../_lib/common.js";
 
@@ -23,7 +23,7 @@ export async function onRequestGet(context) {
 
   let sql = "SELECT * FROM staff_loa WHERE 1=1";
   const binds = [];
-  if (user.level < LEVEL.manager) { binds.push(user.id); sql += ` AND discord_id = ?${binds.length}`; }
+  if (user.level < LEVEL.admin) { binds.push(user.id); sql += ` AND discord_id = ?${binds.length}`; }
   if (filter) { binds.push(filter); sql += ` AND status = ?${binds.length}`; }
   sql += " ORDER BY id DESC LIMIT 200";
   const rows = (await DB.prepare(sql).bind(...binds).all()).results || [];
@@ -78,7 +78,7 @@ export async function onRequestPost(context) {
   }
 
   if (action === "decide") {
-    if (user.level < LEVEL.manager) return json({ success: false, error: "Managers only." }, 403);
+    if (user.level < LEVEL.admin) return json({ success: false, error: "Admins only." }, 403);
     const decision = clean(body.decision, 10);
     if (decision !== "approved" && decision !== "denied") return json({ success: false, error: "Decision must be approved or denied." }, 400);
     if (req.discord_id === user.id && user.level < LEVEL.admin) return json({ success: false, error: "You cannot decide your own request." }, 403);
