@@ -93,248 +93,117 @@
 
     <section class="page-section">
 
-        <div class="container api-docs">
+        <div class="container">
 
-            <style>
-                .docs-jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
-                .docs-jump a { padding: 8px 14px; border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 999px; font-size: 0.9rem; text-decoration: none; color: inherit; }
-                .docs-jump a:hover { border-color: rgba(255, 255, 255, 0.5); }
-                .api-docs [id] { scroll-margin-top: 90px; }
-                .api-docs h4 { margin: 22px 0 8px; }
-            </style>
+<style>
+.docs-layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 40px; align-items: start; }
+.docs-side { position: sticky; top: 90px; max-height: calc(100vh - 110px); overflow-y: auto; padding-right: 6px; }
+.docs-search { width: 100%; margin: 0 0 16px; padding: 10px 12px; background: var(--panel); color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font: inherit; font-size: 15px; }
+.docs-search:focus { outline: 2px solid var(--blue-bright); outline-offset: 1px; }
+.side-group { margin-bottom: 18px; }
+.side-title { font-family: var(--font-head); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 14px; color: var(--text-dim); margin: 0 0 6px; padding: 0 10px; }
+.docs-side a { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 6px; font-size: 15px; color: var(--text-soft); text-decoration: none; border-left: 2px solid transparent; }
+.docs-side a:hover { background: rgba(255, 255, 255, 0.06); color: var(--text); }
+.docs-side a.on { background: rgba(47, 107, 255, 0.16); color: var(--text); border-left-color: var(--blue-bright); }
+.docs-side .none { display: none; color: var(--text-dim); padding: 6px 10px; font-size: 14px; }
+.m { display: inline-block; min-width: 40px; text-align: center; padding: 1px 6px; border-radius: 5px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; line-height: 1.7; color: #fff; }
+.m-get { background: #1f8f5f; }
+.m-post { background: #c8312c; }
+.docs-main, .docs-main.api-docs { display: block; min-width: 0; }
+.doc-sec { padding: 6px 0 34px; margin-bottom: 30px; border-bottom: 1px solid var(--border); scroll-margin-top: 90px; }
+.doc-sec:last-child { border-bottom: 0; }
+.doc-sec h2 { font-family: var(--font-head); font-size: 2rem; margin: 0 0 12px; letter-spacing: 0.01em; }
+.doc-sec h4 { margin: 24px 0 8px; font-size: 1.05rem; }
+.doc-sec p { color: var(--text-soft); }
+.doc-sec .note { color: var(--text-dim); font-size: 0.95rem; }
+.ep { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 14px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.ep .m { font-size: 13px; padding: 2px 10px; }
+.ep code { background: none; border: 0; font-size: 15px; padding: 0; }
+.docs-toggle { display: none; }
+@media (max-width: 900px) {
+    .docs-layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .docs-side { position: static; max-height: none; overflow: visible; padding: 0; }
+    .docs-toggle { display: block; width: 100%; padding: 10px 14px; margin-bottom: 12px; background: var(--panel); color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+    .docs-nav { display: none; }
+    .docs-nav.open { display: block; }
+}
+</style>
+            <div class="docs-layout">
 
-            <nav class="docs-jump" aria-label="Documentation sections">
-                <a href="#start">Start here</a>
-                <a href="#endpoints">Endpoints</a>
-                <a href="#commands">Commands</a>
-                <a href="#keys">Keys, limits &amp; errors</a>
-                <a href="#tools">Connecting tools</a>
-                <a href="#map">Map &amp; site APIs</a>
-                <a href="#developers">For developers</a>
-                <a href="#help">Troubleshooting</a>
-            </nav>
+                <aside class="docs-side">
+                    <button class="docs-toggle" type="button" aria-expanded="false">Menu: jump to a section</button>
+                    <input class="docs-search" type="search" placeholder="Find a section..." aria-label="Find a section">
+                    <nav class="docs-nav" aria-label="Documentation sections"><div class="side-group"><div class="side-title">Getting started</div><a href="#overview" data-k="overview"><span>Overview</span></a><a href="#key" data-k="get your key"><span>Get your key</span></a><a href="#first" data-k="your first request"><span>Your first request</span></a></div><div class="side-group"><div class="side-title">Server</div><a href="#get-server" data-k="server info"><span class="m m-get">GET</span><span>Server info</span></a><a href="#get-players" data-k="players"><span class="m m-get">GET</span><span>Players</span></a><a href="#get-logs" data-k="logs"><span class="m m-get">GET</span><span>Logs</span></a><a href="#post-command" data-k="run a command"><span class="m m-post">POST</span><span>Run a command</span></a><a href="#commands" data-k="command list"><span>Command list</span></a></div><div class="side-group"><div class="side-title">Guides</div><a href="#safety" data-k="keeping your key safe"><span>Keeping your key safe</span></a><a href="#fresh" data-k="how fresh the data is"><span>How fresh the data is</span></a><a href="#limits" data-k="rate limits"><span>Rate limits</span></a><a href="#errors" data-k="error codes"><span>Error codes</span></a></div><div class="side-group"><div class="side-title">Tools</div><a href="#tools" data-k="connecting tools"><span>Connecting tools</span></a><a href="#dev" data-k="for developers"><span>For developers</span></a></div><div class="side-group"><div class="side-title">Public APIs</div><a href="#maps" data-k="maps"><span class="m m-get">GET</span><span>Maps</span></a><a href="#map-points" data-k="map points"><span class="m m-get">GET</span><span>Map points</span></a><a href="#site" data-k="stats and status"><span class="m m-get">GET</span><span>Stats and status</span></a></div><div class="side-group"><div class="side-title">Help</div><a href="#help" data-k="troubleshooting"><span>Troubleshooting</span></a></div><div class="none">No sections match.</div></nav>
+                </aside>
 
-            <div class="livery-card reveal" id="start">
-                <h3>Start here</h3>
-                <p>The Server API lets you control your own Westbrook County private server from a Discord bot or a website, for example to send an announcement, kick someone or see who is online.</p>
-
-                <h4>What you need</h4>
-                <ul class="api-notes">
-                    <li>A Westbrook County private server with the <strong>Server API</strong> pack (Settings &rarr; Upgrade Packs).</li>
-                    <li>A server key, which works like a password for your server.</li>
-                    <li>A bot or website that can send web requests. New to this? The steps below use a free website called <strong>Hoppscotch</strong>, so you don't need to code.</li>
-                </ul>
-
-                <h4>Try it in 3 steps</h4>
-                <ol class="livery-steps">
-                    <li><strong>Get your key.</strong> In-game, open your private server's Settings, scroll to <strong>Server API Pack</strong> and press <strong>Generate key</strong>. Copy it straight away, because it is shown only once. Keep it private.</li>
-                    <li><strong>Check it works.</strong> Go to <strong>hoppscotch.io</strong>, fill in the request like this and press <strong>Send</strong>:</li>
-                </ol>
-                <div class="table-wrap">
-                    <table class="api-table">
-                        <thead><tr><th>Setting</th><th>Value</th></tr></thead>
-                        <tbody>
-                            <tr><td>Method</td><td>GET</td></tr>
-                            <tr><td>URL</td><td><code>https://westbrookcounty.co.uk/api/v1/server</code></td></tr>
-                            <tr><td>Header name</td><td><code>server-key</code></td></tr>
-                            <tr><td>Header value</td><td>your key</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p>You should see your server's name and how many players are in it. If you see "offline", wait a minute and press Send again.</p>
-                <ol class="livery-steps" start="3">
-                    <li><strong>Send a command.</strong> Change the method to <strong>POST</strong> and the URL to <code>https://westbrookcounty.co.uk/api/v1/server/command</code>. Add a header <code>Content-Type</code> with value <code>application/json</code>. In the body put <code>{"command": ":h Hello"}</code> and press Send. "Hello" pops up in-game within a couple of seconds.</li>
-                </ol>
-            </div>
-
-            <div class="livery-card reveal" id="endpoints">
-                <h3>Endpoints</h3>
-                <p>
-                    Every address starts with <code>https://westbrookcounty.co.uk/api/v1</code> and every request needs your <code>server-key</code> header.
-                    "GET" means you are asking for information; "POST" means you are sending something.
-                </p>
-                <div class="table-wrap">
-                    <table class="api-table">
-                        <thead><tr><th>What you want</th><th>Method</th><th>Address ending</th></tr></thead>
-                        <tbody>
-                            <tr><td>Server info</td><td>GET</td><td><code>/server</code></td></tr>
-                            <tr><td>Who is online</td><td>GET</td><td><code>/server/players</code></td></tr>
-                            <tr><td>Everything that happened (joins, leaves, team changes, commands)</td><td>GET</td><td><code>/server/logs</code></td></tr>
-                            <tr><td>Joins and leaves only</td><td>GET</td><td><code>/server/joinlogs</code></td></tr>
-                            <tr><td>Team changes only</td><td>GET</td><td><code>/server/teamlogs</code></td></tr>
-                            <tr><td>Commands sent through the API and how they went</td><td>GET</td><td><code>/server/commandlogs</code></td></tr>
-                            <tr><td>Run a command</td><td>POST</td><td><code>/server/command</code></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p>The server must be running for server info, players and commands. The logs work even when it is off.</p>
-
-                <h4>Server info <code>/server</code></h4>
-                <div class="table-wrap">
-                    <table class="api-table">
-                        <thead><tr><th>Field</th><th>What it is</th></tr></thead>
-                        <tbody>
-                            <tr><td><code>Name</code></td><td>Your server's name</td></tr>
-                            <tr><td><code>OwnerId</code>, <code>OwnerName</code></td><td>The owner</td></tr>
-                            <tr><td><code>CoOwnerIds</code></td><td>Co-owners' Roblox user ids</td></tr>
-                            <tr><td><code>CurrentPlayers</code>, <code>MaxPlayers</code></td><td>How many are in, and the limit</td></tr>
-                            <tr><td><code>JoinKey</code></td><td>The join code</td></tr>
-                            <tr><td><code>TeamBalance</code></td><td>How many players are on each team</td></tr>
-                            <tr><td><code>AgeSeconds</code></td><td>How old this information is, in seconds</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h4>Players <code>/server/players</code></h4>
-                <p>One entry per player (up to 100):</p>
-                <div class="table-wrap">
-                    <table class="api-table">
-                        <thead><tr><th>Field</th><th>What it is</th></tr></thead>
-                        <tbody>
-                            <tr><td><code>Name</code>, <code>DisplayName</code></td><td>Roblox username and display name</td></tr>
-                            <tr><td><code>UserId</code></td><td>Roblox user id</td></tr>
-                            <tr><td><code>Team</code></td><td>Their team</td></tr>
-                            <tr><td><code>Permission</code></td><td>Their permission level in your server</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h4>Logs</h4>
-                <p>Log addresses give the newest entries first and keep the last 400. Add options to the address, for example <code>/server/logs?limit=10</code>:</p>
-                <div class="table-wrap">
-                    <table class="api-table">
-                        <thead><tr><th>Option</th><th>What it does</th></tr></thead>
-                        <tbody>
-                            <tr><td><code>limit</code></td><td>How many entries, from 1 to 100 (default 50)</td></tr>
-                            <tr><td><code>before</code></td><td>An entry <code>Id</code>; shows only older entries, to go back through the list</td></tr>
-                            <tr><td><code>type</code></td><td>Only some kinds, like <code>type=join,leave</code>. Choices: <code>join</code>, <code>leave</code>, <code>team</code>, <code>command</code></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p>Each entry has an <code>Id</code>, a <code>Timestamp</code> and a <code>Type</code> (Join, Leave, Team or Command). Join and leave entries show the player's <code>Name</code> and <code>UserId</code>. Command entries show the <code>Command</code>, whether it worked (<code>Success</code>) and the <code>Result</code>.</p>
-
-                <h4>Run a command <code>/server/command</code></h4>
-                <p>Send a POST with the header <code>Content-Type: application/json</code> and a body like this (up to 300 characters):</p>
+                <div class="docs-main api-docs">
+<section class="doc-sec" id="overview"><h2>Overview</h2>
+<p>The Server API lets you control your own Westbrook County private server from a Discord bot or a website, for example to send an announcement, kick someone or see who is online.</p>
+<p>You need:</p>
+<ul class="api-notes">
+<li>A Westbrook County private server with the <strong>Server API</strong> pack (Settings &rarr; Upgrade Packs).</li>
+<li>A server key, which works like a password for your server.</li>
+<li>A bot or website that can send web requests. New to this? The steps below use a free website called <strong>Hoppscotch</strong>, so you don't need to code.</li>
+</ul>
+<p>Base address for everything on this page: <code>https://westbrookcounty.co.uk/api/v1</code></p></section>
+<section class="doc-sec" id="key"><h2>Get your key</h2>
+<ol class="livery-steps">
+<li>In-game, open your private server's Settings.</li>
+<li>Scroll to <strong>Server API Pack</strong> and press <strong>Generate key</strong>.</li>
+<li>Copy the key straight away. It is shown only once, and generating a new one switches the old one off immediately.</li>
+</ol>
+<p>Keep it private. Anyone with the key can run commands on your server.</p></section>
+<section class="doc-sec" id="first"><h2>Your first request</h2>
+<p>Go to <strong>hoppscotch.io</strong>, fill in the request like this and press <strong>Send</strong>:</p><div class="table-wrap"><table class="api-table"><thead><tr><th>Setting</th><th>Value</th></tr></thead><tbody><tr><td>Method</td><td>GET</td></tr><tr><td>URL</td><td><code>https://westbrookcounty.co.uk/api/v1/server</code></td></tr><tr><td>Header name</td><td><code>server-key</code></td></tr><tr><td>Header value</td><td>your key</td></tr></tbody></table></div>
+<p>You should see your server's name and how many players are in it. If you see "offline", wait a minute and press Send again.</p>
+<p>Now try a command. Change the method to <strong>POST</strong> and the URL to <code>https://westbrookcounty.co.uk/api/v1/server/command</code>. Add a header <code>Content-Type</code> with value <code>application/json</code>. In the body put <code>{"command": ":h Hello"}</code> and press Send. "Hello" pops up in-game within a couple of seconds.</p></section>
+<section class="doc-sec" id="get-server"><h2>Server info</h2><div class="ep"><span class="m m-get">GET</span><code>/server</code></div>
+<p>Name, owner, player count, join code and team balance.</p><div class="table-wrap"><table class="api-table"><thead><tr><th>Field</th><th>What it is</th></tr></thead><tbody><tr><td><code>Name</code></td><td>Your server's name</td></tr><tr><td><code>OwnerId</code>, <code>OwnerName</code></td><td>The owner</td></tr><tr><td><code>CoOwnerIds</code></td><td>Co-owners' Roblox user ids</td></tr><tr><td><code>CurrentPlayers</code>, <code>MaxPlayers</code></td><td>How many are in, and the limit</td></tr><tr><td><code>JoinKey</code></td><td>The join code</td></tr><tr><td><code>TeamBalance</code></td><td>How many players are on each team</td></tr><tr><td><code>AgeSeconds</code></td><td>How old this information is, in seconds</td></tr></tbody></table></div><p class="note">The server must be running, or you get <code>422</code> (offline).</p></section>
+<section class="doc-sec" id="get-players"><h2>Players</h2><div class="ep"><span class="m m-get">GET</span><code>/server/players</code></div>
+<p>Everyone in the server, up to 100 players.</p><div class="table-wrap"><table class="api-table"><thead><tr><th>Field</th><th>What it is</th></tr></thead><tbody><tr><td><code>Name</code>, <code>DisplayName</code></td><td>Roblox username and display name</td></tr><tr><td><code>UserId</code></td><td>Roblox user id</td></tr><tr><td><code>Team</code></td><td>Their team</td></tr><tr><td><code>Permission</code></td><td>Their permission level in your server</td></tr></tbody></table></div><p class="note">The server must be running, or you get <code>422</code> (offline).</p></section>
+<section class="doc-sec" id="get-logs"><h2>Logs</h2><div class="ep"><span class="m m-get">GET</span><code>/server/logs</code></div>
+<p>What happened in your server, newest first. The last 400 entries are kept, and logs still work when the server is off.</p><div class="table-wrap"><table class="api-table"><thead><tr><th>Address</th><th>Shows</th></tr></thead><tbody><tr><td><code>/server/logs</code></td><td>Everything: joins, leaves, team changes and API commands</td></tr><tr><td><code>/server/joinlogs</code></td><td>Joins and leaves only</td></tr><tr><td><code>/server/teamlogs</code></td><td>Team changes only</td></tr><tr><td><code>/server/commandlogs</code></td><td>Commands sent through the API and how they went</td></tr></tbody></table></div>
+<h4>Options</h4>
+<p>Add these to the address, for example <code>/server/logs?limit=10</code>.</p><div class="table-wrap"><table class="api-table"><thead><tr><th>Option</th><th>What it does</th></tr></thead><tbody><tr><td><code>limit</code></td><td>How many entries, from 1 to 100 (default 50)</td></tr><tr><td><code>before</code></td><td>An entry <code>Id</code>; shows only older entries, to go back through the list</td></tr><tr><td><code>type</code></td><td>Only some kinds, like <code>type=join,leave</code>. Choices: <code>join</code>, <code>leave</code>, <code>team</code>, <code>command</code></td></tr></tbody></table></div>
+<h4>What an entry contains</h4>
+<p>Each entry has an <code>Id</code>, a <code>Timestamp</code> and a <code>Type</code> (Join, Leave, Team or Command). Join and leave entries show the player's <code>Name</code> and <code>UserId</code>. Command entries show the <code>Command</code>, whether it worked (<code>Success</code>) and the <code>Result</code>.</p></section>
+<section class="doc-sec" id="post-command"><h2>Run a command</h2><div class="ep"><span class="m m-post">POST</span><code>/server/command</code></div>
+<p>Sends one command to your server. Add the header <code>Content-Type: application/json</code> and a body like this (up to 300 characters):</p>
 <pre class="api-code">{ "command": ":h Hello everyone" }</pre>
-                <p>You get back <code>Success</code> and a <code>commandId</code>. That means the command was <strong>sent</strong>, not that it has run. The game runs it within a couple of seconds, and you can see how it went in <code>/server/commandlogs</code>.</p>
-            </div>
-
-            <div class="livery-card reveal" id="commands">
-                <h3>Commands</h3>
-                <p>Send these as the <code>command</code> text. A player can be a username, a display name, the start of either, or a user id.</p>
-                <div class="table-wrap">
-                    <table class="api-table">
-                        <thead><tr><th>Command</th><th>Effect</th></tr></thead>
-                        <tbody>
-                            <tr><td><code>:h &lt;message&gt;</code></td><td>Show a message to everyone (also <code>:m</code>, <code>:message</code>, <code>:announce</code>). Filtered by Roblox.</td></tr>
-                            <tr><td><code>:pm &lt;player&gt; &lt;message&gt;</code></td><td>Private message to one player.</td></tr>
-                            <tr><td><code>:kick &lt;player&gt; [reason]</code></td><td>Remove a player. The owner and co-owners can't be kicked.</td></tr>
-                            <tr><td><code>:heal &lt;player&gt;</code></td><td>Restore a player's health.</td></tr>
-                            <tr><td><code>:time &lt;cycle|dawn|day|dusk|night&gt;</code></td><td>Set the time of day.</td></tr>
-                            <tr><td><code>:weather &lt;clear|cloudy|rain|storm|fog|dynamic&gt;</code></td><td>Set the weather.</td></tr>
-                            <tr><td><code>:peacetime &lt;off|normal|strict&gt;</code></td><td>Peacetime mode.</td></tr>
-                            <tr><td><code>:priority &lt;0-3&gt;</code></td><td>How many priorities may run at once (0 turns them off).</td></tr>
-                            <tr><td><code>:set &lt;setting&gt; &lt;value&gt;</code></td><td>peacetime, priorityMax, priorityCooldown, wantedDecay, civilianWeapons, timeOfDay, weather, streetLamps, fuelMultiplier, damageMultiplier, nameTags.</td></tr>
-                            <tr><td><code>:help</code></td><td>Lists these in the command log.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p>Settings changed with <code>:time</code>, <code>:weather</code>, <code>:peacetime</code>, <code>:priority</code> and <code>:set</code> are saved to your server, the same as the in-game settings panel.</p>
-            </div>
-
-            <div class="livery-card reveal" id="keys">
-                <h3>Keys, limits &amp; errors</h3>
-
-                <h4>Keeping your key safe</h4>
-                <ul class="api-notes">
-                    <li>Treat the key like a password: anyone who has it can run commands on your server.</li>
-                    <li>Keep it in an environment variable or secret store, never in front-end code, a public repository or a Discord message.</li>
-                    <li>If it leaks, press <strong>Generate key</strong> again in your server settings. The old key stops working immediately.</li>
-                    <li>Only let trusted staff use any bot command that sends in-game commands.</li>
-                    <li>Web pages cannot call the API directly (browsers are blocked). Call it from a bot or a website's back-end.</li>
-                </ul>
-
-                <h4>How fresh the data is</h4>
-                <ul class="api-notes">
-                    <li>Information comes from your server's last report, not live: about every 15 seconds while you are using the API, otherwise about once a minute.</li>
-                    <li>If the server has not reported for about 15 minutes, server info, players and commands answer <code>422</code> (offline). Logs still return the last 400 entries.</li>
-                    <li>Commands are queued, not confirmed. Roblox messaging can rarely lose a message, so resend if nothing happens.</li>
-                </ul>
-
-                <h4>Limits</h4>
-                <p>20 requests per 10 seconds and 10 commands per minute, per key. Going over gives a <code>429</code> with a <code>Retry-After</code> header (seconds to wait).</p>
-
-                <h4>Error codes</h4>
-                <p>Errors look like <code>{"code": 2002, "message": "Invalid server-key."}</code></p>
-                <div class="table-wrap">
-                    <table class="api-table">
-                        <thead><tr><th>HTTP</th><th>Code</th><th>Meaning</th></tr></thead>
-                        <tbody>
-                            <tr><td>400</td><td>2003</td><td>Bad request: the body is not JSON, <code>command</code> is missing or over 300 characters, or a log <code>type</code> is unknown</td></tr>
-                            <tr><td>401</td><td>2000</td><td>No <code>server-key</code> header</td></tr>
-                            <tr><td>403</td><td>2002</td><td>Key is wrong, or was regenerated</td></tr>
-                            <tr><td>413</td><td>2004</td><td>Request body too large (over 2048 bytes)</td></tr>
-                            <tr><td>422</td><td>3002</td><td>Server is offline</td></tr>
-                            <tr><td>429</td><td>4001</td><td>Too many requests; wait for <code>Retry-After</code></td></tr>
-                            <tr><td>500</td><td>5001</td><td>The logs could not be read; try again</td></tr>
-                            <tr><td>502</td><td>5002</td><td>Roblox could not be reached to send the command; try again</td></tr>
-                            <tr><td>503</td><td>5000</td><td>The Server API is not available right now; try later or ask staff</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="livery-card reveal" id="tools">
-                <h3>Connecting tools</h3>
-                <p>Bots and dashboards (such as Melonly) that can talk to a server API usually ask for a base URL, the name of the key header, and your key.</p>
-                <div class="table-wrap">
-                    <table class="api-table">
-                        <thead><tr><th>Setting</th><th>Value</th></tr></thead>
-                        <tbody>
-                            <tr><td>Base URL</td><td><code>https://westbrookcounty.co.uk/api/v1</code></td></tr>
-                            <tr><td>Key header name</td><td><code>server-key</code></td></tr>
-                            <tr><td>Key header value</td><td>Your server key (starts with <code>wbk_</code>)</td></tr>
-                            <tr><td>Other headers</td><td>None for reading. For commands, also <code>Content-Type: application/json</code></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <ul class="api-notes">
-                    <li>The layout and field names follow the ER:LC server API (<code>Name</code>, <code>CurrentPlayers</code>, <code>Player</code> as <code>Name:UserId</code>, <code>Team</code>, <code>Permission</code>), so tools built for that style are the closest fit.</li>
-                    <li>There is no separate global key. Your server key is the only key you need.</li>
-                    <li>A tool can only use this API if it lets you set a custom URL. Tools hard-coded to another game's address will not connect.</li>
-                    <li>Not every tool has been tested with this API yet.</li>
-                </ul>
-            </div>
-
-            <div class="livery-card reveal" id="map">
-                <h3>Map &amp; site APIs</h3>
-                <p>These are public: no key is needed. They live at <code>https://westbrookcounty.co.uk</code> and the two map addresses can be used from any website.</p>
-                <div class="table-wrap">
-                    <table class="api-table">
-                        <thead><tr><th>Address</th><th>What you get</th></tr></thead>
-                        <tbody>
-                            <tr><td><code>GET /api/maps</code></td><td>Map image links, plus the image size, studs per pixel and map edges</td></tr>
-                            <tr><td><code>GET /api/map-points</code></td><td>Places and streets with their positions in the game world</td></tr>
-                            <tr><td><code>GET /api/stats</code></td><td>Live Roblox stats for the game</td></tr>
-                            <tr><td><code>GET /api/status</code></td><td>Website and API status</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <h4>Map images</h4>
-                <ul class="api-notes">
-                    <li><a href="/assets/maps/westbrook_blank.png"><code>/assets/maps/westbrook_blank.png</code></a>: plain map, transparent outside the island</li>
-                    <li><a href="/assets/maps/westbrook_labelled.png"><code>/assets/maps/westbrook_labelled.png</code></a>: map with street names and places</li>
-                    <li><a href="/assets/maps/westbrook_blank_small.png"><code>/assets/maps/westbrook_blank_small.png</code></a>: smaller plain map</li>
-                </ul>
-                <h4>Marking a place on the map</h4>
-                <p><code>/api/map-points</code> gives each place and street with its position in the game world. <code>/api/maps</code> gives the image size and the edges of the map (<code>bounds</code>). To find a spot on the image, take how far across the map the position is and multiply by the image width, and do the same down the map for the height. The top of the image is the smallest <code>z</code> value.</p>
-            </div>
-
-            <div class="livery-card reveal" id="developers">
-                <h3>For developers</h3>
-                <p>You can skip this if you only want to try the API in Hoppscotch. It is for people building a website or bot.</p>
-                <h4>Connecting a website</h4>
-                <p>Keep the key in an environment variable called <code>SERVER_KEY</code>, never in the code or the page. Your page talks to your back-end, and the back-end calls the API.</p>
+<p>You get back <code>Success</code> and a <code>commandId</code>. That means the command was <strong>sent</strong>, not that it has run. The game runs it within a couple of seconds, and you can see how it went in <code>/server/commandlogs</code>.</p>
+<p class="note">The server must be running, or you get <code>422</code> (offline). Limit: 10 commands per minute.</p></section>
+<section class="doc-sec" id="commands"><h2>Command list</h2>
+<p>Send these as the <code>command</code> text. A player can be a username, a display name, the start of either, or a user id.</p><div class="table-wrap"><table class="api-table"><thead><tr><th>Command</th><th>Effect</th></tr></thead><tbody><tr><td><code>:h &lt;message&gt;</code></td><td>Show a message to everyone (also <code>:m</code>, <code>:message</code>, <code>:announce</code>). Filtered by Roblox.</td></tr><tr><td><code>:pm &lt;player&gt; &lt;message&gt;</code></td><td>Private message to one player.</td></tr><tr><td><code>:kick &lt;player&gt; [reason]</code></td><td>Remove a player. The owner and co-owners can't be kicked.</td></tr><tr><td><code>:heal &lt;player&gt;</code></td><td>Restore a player's health.</td></tr><tr><td><code>:time &lt;cycle|dawn|day|dusk|night&gt;</code></td><td>Set the time of day.</td></tr><tr><td><code>:weather &lt;clear|cloudy|rain|storm|fog|dynamic&gt;</code></td><td>Set the weather.</td></tr><tr><td><code>:peacetime &lt;off|normal|strict&gt;</code></td><td>Peacetime mode.</td></tr><tr><td><code>:priority &lt;0-3&gt;</code></td><td>How many priorities may run at once (0 turns them off).</td></tr><tr><td><code>:set &lt;setting&gt; &lt;value&gt;</code></td><td>peacetime, priorityMax, priorityCooldown, wantedDecay, civilianWeapons, timeOfDay, weather, streetLamps, fuelMultiplier, damageMultiplier, nameTags.</td></tr><tr><td><code>:help</code></td><td>Lists these in the command log.</td></tr></tbody></table></div><p>Settings changed with <code>:time</code>, <code>:weather</code>, <code>:peacetime</code>, <code>:priority</code> and <code>:set</code> are saved to your server, the same as the in-game settings panel.</p></section>
+<section class="doc-sec" id="safety"><h2>Keeping your key safe</h2>
+<ul class="api-notes">
+<li>Treat the key like a password: anyone who has it can run commands on your server.</li>
+<li>Keep it in an environment variable or secret store, never in front-end code, a public repository or a Discord message.</li>
+<li>If it leaks, press <strong>Generate key</strong> again in your server settings. The old key stops working immediately.</li>
+<li>Only let trusted staff use any bot command that sends in-game commands.</li>
+<li>Web pages cannot call the API directly (browsers are blocked). Call it from a bot or a website's back-end.</li>
+</ul></section>
+<section class="doc-sec" id="fresh"><h2>How fresh the data is</h2>
+<ul class="api-notes">
+<li>Information comes from your server's last report, not live: about every 15 seconds while you are using the API, otherwise about once a minute.</li>
+<li>If the server has not reported for about 15 minutes, server info, players and commands answer <code>422</code> (offline). Logs still return the last 400 entries.</li>
+<li>Commands are queued, not confirmed. Roblox messaging can rarely lose a message, so resend if nothing happens.</li>
+</ul></section>
+<section class="doc-sec" id="limits"><h2>Rate limits</h2>
+<p>20 requests per 10 seconds and 10 commands per minute, per key. Going over gives a <code>429</code> with a <code>Retry-After</code> header (seconds to wait).</p></section>
+<section class="doc-sec" id="errors"><h2>Error codes</h2>
+<p>Errors look like <code>{"code": 2002, "message": "Invalid server-key."}</code></p><div class="table-wrap"><table class="api-table"><thead><tr><th>HTTP</th><th>Code</th><th>Meaning</th></tr></thead><tbody><tr><td>400</td><td>2003</td><td>Bad request: the body is not JSON, <code>command</code> is missing or over 300 characters, or a log <code>type</code> is unknown</td></tr><tr><td>401</td><td>2000</td><td>No <code>server-key</code> header</td></tr><tr><td>403</td><td>2002</td><td>Key is wrong, or was regenerated</td></tr><tr><td>413</td><td>2004</td><td>Request body too large (over 2048 bytes)</td></tr><tr><td>422</td><td>3002</td><td>Server is offline</td></tr><tr><td>429</td><td>4001</td><td>Too many requests; wait for <code>Retry-After</code></td></tr><tr><td>500</td><td>5001</td><td>The logs could not be read; try again</td></tr><tr><td>502</td><td>5002</td><td>Roblox could not be reached to send the command; try again</td></tr><tr><td>503</td><td>5000</td><td>The Server API is not available right now; try later or ask staff</td></tr></tbody></table></div></section>
+<section class="doc-sec" id="tools"><h2>Connecting tools</h2>
+<p>Bots and dashboards (such as Melonly) that can talk to a server API usually ask for a base URL, the name of the key header, and your key.</p><div class="table-wrap"><table class="api-table"><thead><tr><th>Setting</th><th>Value</th></tr></thead><tbody><tr><td>Base URL</td><td><code>https://westbrookcounty.co.uk/api/v1</code></td></tr><tr><td>Key header name</td><td><code>server-key</code></td></tr><tr><td>Key header value</td><td>Your server key (starts with <code>wbk_</code>)</td></tr><tr><td>Other headers</td><td>None for reading. For commands, also <code>Content-Type: application/json</code></td></tr></tbody></table></div>
+<ul class="api-notes">
+<li>The layout and field names follow the ER:LC server API (<code>Name</code>, <code>CurrentPlayers</code>, <code>Player</code> as <code>Name:UserId</code>, <code>Team</code>, <code>Permission</code>), so tools built for that style are the closest fit.</li>
+<li>There is no separate global key. Your server key is the only key you need.</li>
+<li>A tool can only use this API if it lets you set a custom URL. Tools hard-coded to another game's address will not connect.</li>
+<li>Not every tool has been tested with this API yet.</li>
+</ul></section>
+<section class="doc-sec" id="dev"><h2>For developers</h2>
+<p>You can skip this if you only want to try the API in Hoppscotch. It is for people building a website or bot.</p>
+<h4>Connecting a website</h4>
+<p>Keep the key in an environment variable called <code>SERVER_KEY</code>, never in the code or the page. Your page talks to your back-end, and the back-end calls the API.</p>
 <pre class="api-code">app.post("/announce", async (req, res) => {
   const r = await fetch("https://westbrookcounty.co.uk/api/v1/server/command", {
     method: "POST",
@@ -343,33 +212,80 @@
   });
   res.status(r.status).json(await r.json());
 });</pre>
-                <p>The same approach works in PHP, Python or a Cloudflare function: send the <code>server-key</code> header from the server side.</p>
-                <h4>Discord bots</h4>
-                <p>A bot only needs to call the same endpoints with the <code>server-key</code> header, for example <code>/server</code>, <code>/server/players</code> and <code>/server/command</code>. Restrict any command that sends in-game commands to your staff role.</p>
-            </div>
+<p>The same approach works in PHP, Python or a Cloudflare function: send the <code>server-key</code> header from the server side.</p>
+<h4>Discord bots</h4>
+<p>A bot only needs to call the same endpoints with the <code>server-key</code> header, for example <code>/server</code>, <code>/server/players</code> and <code>/server/command</code>. Restrict any command that sends in-game commands to your staff role.</p></section>
+<section class="doc-sec" id="maps"><h2>Maps</h2><div class="ep"><span class="m m-get">GET</span><code>https://westbrookcounty.co.uk/api/maps</code></div>
+<p>Public: no key needed, and it can be used from any website. Gives map image links plus the image size, studs per pixel and the map edges (<code>bounds</code>).</p>
+<h4>Map images</h4>
+<ul class="api-notes">
+<li><a href="/assets/maps/westbrook_blank.png"><code>/assets/maps/westbrook_blank.png</code></a>: plain map, transparent outside the island</li>
+<li><a href="/assets/maps/westbrook_labelled.png"><code>/assets/maps/westbrook_labelled.png</code></a>: map with street names and places</li>
+<li><a href="/assets/maps/westbrook_blank_small.png"><code>/assets/maps/westbrook_blank_small.png</code></a>: smaller plain map</li>
+</ul>
+<h4>Marking a place on the map</h4>
+<p>To find a spot on the image, take how far across the map the position is and multiply by the image width, and do the same down the map for the height. The top of the image is the smallest <code>z</code> value.</p></section>
+<section class="doc-sec" id="map-points"><h2>Map points</h2><div class="ep"><span class="m m-get">GET</span><code>https://westbrookcounty.co.uk/api/map-points</code></div>
+<p>Public: no key needed, and it can be used from any website. Places and streets with their positions in the game world. Street label positions are approximate.</p></section>
+<section class="doc-sec" id="site"><h2>Stats and status</h2>
+<p>Public: no key needed.</p><div class="table-wrap"><table class="api-table"><thead><tr><th>Address</th><th>What you get</th></tr></thead><tbody><tr><td><code>GET https://westbrookcounty.co.uk/api/stats</code></td><td>Live Roblox stats for the game</td></tr><tr><td><code>GET https://westbrookcounty.co.uk/api/status</code></td><td>Website and API status</td></tr></tbody></table></div></section>
+<section class="doc-sec" id="help"><h2>Troubleshooting</h2>
+<div class="table-wrap"><table class="api-table"><thead><tr><th>Symptom</th><th>Likely cause and fix</th></tr></thead><tbody><tr><td><code>422</code> right after generating a key</td><td>The server has not sent its first report yet. Wait up to a minute and try again.</td></tr><tr><td><code>422</code> later on</td><td>The server is not running, or has not reported for about 15 minutes. Start it and retry.</td></tr><tr><td><code>403</code></td><td>Wrong key, or the key was regenerated. Generate a new one in your server settings.</td></tr><tr><td><code>401</code></td><td>The <code>server-key</code> header is missing. Check the header name.</td></tr><tr><td><code>429</code></td><td>Too many requests. Wait for the <code>Retry-After</code> seconds.</td></tr><tr><td><code>400</code> on a command</td><td>The body must be JSON like <code>{"command": ":h Hello"}</code>, at most 300 characters.</td></tr><tr><td>Command accepted but nothing happens</td><td>Resend it, and check <code>/server/commandlogs</code> for the result.</td></tr><tr><td><code>502</code> or <code>503</code></td><td>The website could not reach Roblox, or the Server API is not available right now. Try again in a minute, then ask staff in Discord.</td></tr><tr><td>Browser error calling from a web page</td><td>Browsers cannot call the API directly. Call it from a bot or back-end.</td></tr></tbody></table></div><p>Still stuck? Ask in the Westbrook County Discord. Never post your server key there; if you do, regenerate it straight away.</p></section>
 
-            <div class="livery-card reveal" id="help">
-                <h3>Troubleshooting</h3>
-                <div class="table-wrap">
-                    <table class="api-table">
-                        <thead><tr><th>Symptom</th><th>Likely cause and fix</th></tr></thead>
-                        <tbody>
-                            <tr><td><code>422</code> right after generating a key</td><td>The server has not sent its first report yet. Wait up to a minute and try again.</td></tr>
-                            <tr><td><code>422</code> later on</td><td>The server is not running, or has not reported for about 15 minutes. Start it and retry.</td></tr>
-                            <tr><td><code>403</code></td><td>Wrong key, or the key was regenerated. Generate a new one in your server settings.</td></tr>
-                            <tr><td><code>401</code></td><td>The <code>server-key</code> header is missing. Check the header name.</td></tr>
-                            <tr><td><code>429</code></td><td>Too many requests. Wait for the <code>Retry-After</code> seconds.</td></tr>
-                            <tr><td><code>400</code> on a command</td><td>The body must be JSON like <code>{"command": ":h Hello"}</code>, at most 300 characters.</td></tr>
-                            <tr><td>Command accepted but nothing happens</td><td>Resend it, and check <code>/server/commandlogs</code> for the result.</td></tr>
-                            <tr><td><code>502</code> or <code>503</code></td><td>The website could not reach Roblox, or the Server API is not available right now. Try again in a minute, then ask staff in Discord.</td></tr>
-                            <tr><td>Browser error calling from a web page</td><td>Browsers cannot call the API directly. Call it from a bot or back-end.</td></tr>
-                        </tbody>
-                    </table>
                 </div>
-                <p>Still stuck? Ask in the Westbrook County Discord. Never post your server key there; if you do, regenerate it straight away.</p>
-            </div>
 
+            </div>
         </div>
+
+<script>
+(function () {
+    var nav = document.querySelector(".docs-nav");
+    var links = Array.prototype.slice.call(nav.querySelectorAll("a"));
+    var groups = Array.prototype.slice.call(nav.querySelectorAll(".side-group"));
+    var none = nav.querySelector(".none");
+    var search = document.querySelector(".docs-search");
+    var toggle = document.querySelector(".docs-toggle");
+
+    toggle.addEventListener("click", function () {
+        var open = nav.classList.toggle("open");
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    links.forEach(function (a) {
+        a.addEventListener("click", function () { nav.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); });
+    });
+
+    search.addEventListener("input", function () {
+        var q = search.value.trim().toLowerCase();
+        var shown = 0;
+        links.forEach(function (a) {
+            var hit = !q || a.getAttribute("data-k").indexOf(q) !== -1;
+            a.style.display = hit ? "" : "none";
+            if (hit) shown++;
+        });
+        groups.forEach(function (g) {
+            var any = Array.prototype.some.call(g.querySelectorAll("a"), function (a) { return a.style.display !== "none"; });
+            g.style.display = any ? "" : "none";
+        });
+        none.style.display = shown ? "none" : "block";
+        if (q && window.innerWidth <= 900) nav.classList.add("open");
+    });
+
+    var byId = {};
+    links.forEach(function (a) { byId[a.getAttribute("href").slice(1)] = a; });
+    var sections = Array.prototype.slice.call(document.querySelectorAll(".doc-sec"));
+    function mark(id) {
+        links.forEach(function (a) { a.classList.remove("on"); });
+        if (byId[id]) byId[id].classList.add("on");
+    }
+    if ("IntersectionObserver" in window) {
+        var obs = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) { if (e.isIntersecting) mark(e.target.id); });
+        }, { rootMargin: "-90px 0px -65% 0px" });
+        sections.forEach(function (s) { obs.observe(s); });
+    }
+    mark((location.hash || "#overview").slice(1));
+})();
+</script>
 
     </section>
 
