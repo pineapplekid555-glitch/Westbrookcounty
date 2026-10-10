@@ -12,10 +12,13 @@ Staff log in with Discord. Your Discord server's roles decide what each person c
 Everything is checked on the server for every request. Someone without the role gets nothing, even if they know the address.
 No staff data is stored in this public repo: it lives in Cloudflare D1.
 
-## 1. Database tables
-Cloudflare dashboard > Storage & Databases > D1 > open `westbrook-server-api` (the one the Server API uses) > Console.
-Paste the whole of `staff-portal/schema.sql` and run it. (If you would rather keep staff data in its own database, create a new D1 database,
-run the file there, and bind it to the Pages project with the variable name `STAFF_DB` instead.)
+## 1. Create a separate database for staff data
+Keep this apart from the Server API database.
+1. Cloudflare dashboard > Storage & Databases > D1 SQL database > **Create database**. Name it `westbrook-staff`.
+2. Open it > **Console**, paste the whole of `staff-portal/schema.sql` and run it.
+3. Go to Workers & Pages > your Pages project > Settings > Bindings > **Add > D1 database**. The variable name must be exactly `STAFF_DB`. Pick `westbrook-staff`. Add it for Production.
+
+(`STAFF_DB` is used whenever it exists. Only if it is missing does the portal fall back to the `SERVER_API_DB` binding, which you do not want.)
 
 ## 2. Discord application (free, no bot needed)
 1. https://discord.com/developers/applications > **New Application** > name it "Westbrook Staff Portal".
