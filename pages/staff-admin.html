@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Staff Portal | Westbrook County</title>
+    <title>Staff Admin | Westbrook County</title>
 
     <meta name="description" content="Westbrook County staff portal.">
     <meta name="robots" content="noindex, nofollow">
@@ -73,11 +73,11 @@
 
         <div class="container">
 
-            <div class="eyebrow">Staff only</div>
+            <div class="eyebrow">Admins only</div>
 
-            <h1>Staff Portal</h1>
+            <h1>Staff Admin</h1>
 
-            <p>LOA requests, announcements and the staff roster.</p>
+            <p>Health check, members, sessions, exports and the activity log.</p>
 
         </div>
 
@@ -88,6 +88,10 @@
         <div class="container sp">
 
 <style>
+.sp-tabs.small{margin-bottom:12px}
+.sp-ok{color:#4fd08f;font-weight:700}.sp-no{color:var(--red-bright);font-weight:700}
+.sp-inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sp-inline select,.sp-inline input[type=text]{width:auto!important}
 .sp { max-width: 980px; margin: 0 auto; }
 .sp [hidden] { display: none !important; }
 .sp-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 18px; }
@@ -153,117 +157,70 @@ a.sp-tile:hover { border-color: var(--blue-bright); }
             <div id="sp-msg" class="sp-msg" hidden></div>
 
             <div id="sp-login" class="sp-card sp-login" hidden>
-                <h3>Staff login</h3>
-                <p>This area is for Westbrook County staff. Log in with Discord. Access depends on your staff role in the Discord server.</p>
+                <h3>Admin login</h3>
+                <p>Log in with Discord. This page is for admins only.</p>
                 <a class="sp-btn" href="/api/staff/login">Log in with Discord</a>
+            </div>
+
+            <div id="sp-denied" class="sp-card sp-login" hidden>
+                <h3>No access</h3>
+                <p>This page is only for admins.</p>
+                <a class="sp-btn alt" href="/pages/staff.html">Back to the staff portal</a>
             </div>
 
             <div id="sp-app" hidden>
                 <div class="sp-bar">
                     <div class="sp-who"><span id="sp-av"></span><div><strong id="sp-name"></strong> <span id="sp-level" class="sp-badge"></span></div></div>
-                    <div class="sp-actions"><a href="/pages/staff-admin.html" id="sp-admin-link" class="sp-btn alt sm" hidden>Admin page</a><button type="button" id="sp-logout" class="sp-btn alt sm">Log out</button></div>
+                    <div class="sp-actions"><a href="/pages/staff.html" class="sp-btn alt sm">Staff portal</a><button type="button" id="sp-logout" class="sp-btn alt sm">Log out</button></div>
                 </div>
 
-                <div class="sp-tabs" role="tablist" aria-label="Staff portal sections">
-                    <button type="button" role="tab" data-tab="dash" aria-selected="true">Dashboard</button>
-                    <button type="button" role="tab" data-tab="ann" aria-selected="false">Announcements</button>
-                    <button type="button" role="tab" data-tab="loa" aria-selected="false">LOA</button>
-                    <button type="button" role="tab" data-tab="duty" aria-selected="false">Duty</button>
-                    <button type="button" role="tab" data-tab="tasks" aria-selected="false">Tasks</button>
-                    <button type="button" role="tab" data-tab="strikes" aria-selected="false">Strikes</button>
-                    <button type="button" role="tab" data-tab="roster" aria-selected="false">Roster</button>
+                <div class="sp-tabs" role="tablist" aria-label="Admin sections">
+                    <button type="button" role="tab" data-tab="over" aria-selected="true">Overview</button>
+                    <button type="button" role="tab" data-tab="members" aria-selected="false">Members</button>
+                    <button type="button" role="tab" data-tab="sessions" aria-selected="false">Sessions</button>
+                    <button type="button" role="tab" data-tab="log" aria-selected="false">Activity log</button>
+                    <button type="button" role="tab" data-tab="data" aria-selected="false">Data</button>
                 </div>
 
-                <div id="tab-dash" role="tabpanel">
-                    <div class="sp-card sp-hero">
-                        <div><h3 id="d-hello">Welcome</h3><div class="sp-meta" id="d-sub"></div></div>
-                        <button type="button" class="sp-btn sp-clock" id="d-clock">Clock in</button>
-                    </div>
-                    <div class="sp-grid" id="d-tiles"></div>
-                    <div class="sp-cols">
-                        <div class="sp-card"><h3>Latest announcements</h3><div id="d-news"></div></div>
-                        <div class="sp-card"><h3>On duty now</h3><div id="d-duty"></div></div>
-                        <div class="sp-card"><h3>Away</h3><div id="d-away"></div></div>
-                        <div class="sp-card" id="d-recent-card" hidden><h3>Recent activity</h3><div id="d-recent"></div></div>
+                <div id="tab-over" role="tabpanel">
+                    <div class="sp-card"><h3>Setup check</h3><div id="o-setup"></div></div>
+                    <div class="sp-grid" id="o-tiles"></div>
+                </div>
+
+                <div id="tab-members" role="tabpanel" hidden>
+                    <div class="sp-card"><h3>Members</h3>
+                        <p class="sp-meta">Level comes from Discord roles. Suspending blocks portal login without touching Discord roles. You cannot suspend yourself or a protected admin.</p>
+                        <div class="tw"><table><thead><tr><th>Name</th><th>Level</th><th>Status</th><th>Sessions</th><th>Strikes</th><th>Last login</th><th></th></tr></thead><tbody id="m-body"></tbody></table></div>
                     </div>
                 </div>
 
-<div id="tab-ann" role="tabpanel" hidden>
-                    <div class="sp-card" id="ann-form-card" hidden>
-                        <h3>Post an announcement</h3>
-                        <label for="ann-title">Title</label>
-                        <input type="text" id="ann-title" maxlength="100">
-                        <label for="ann-body">Message</label>
-                        <textarea id="ann-body" maxlength="2000"></textarea>
-                        <label class="sp-check"><input type="checkbox" id="ann-pin"> Pin to the top</label>
-                        <label class="sp-check" id="ann-discord-row"><input type="checkbox" id="ann-discord"> Also post to the staff Discord channel</label>
-                        <button type="button" class="sp-btn" id="ann-send">Post</button>
+                <div id="tab-sessions" role="tabpanel" hidden>
+                    <div class="sp-card"><h3>Active sessions</h3>
+                        <div id="s-list"></div>
+                        <button type="button" class="sp-btn bad" id="s-all">Log everyone else out</button>
                     </div>
-                    <div class="sp-card"><h3>Announcements</h3><div id="ann-list"></div></div>
                 </div>
 
-                <div id="tab-loa" role="tabpanel" hidden>
-                    <div class="sp-card">
-                        <h3>Request leave of absence</h3>
-                        <div class="sp-row">
-                            <div><label for="loa-start">From</label><input type="date" id="loa-start"></div>
-                            <div><label for="loa-end">To</label><input type="date" id="loa-end"></div>
+                <div id="tab-log" role="tabpanel" hidden>
+                    <div class="sp-card"><h3>Activity log</h3>
+                        <div class="sp-inline"><input type="text" id="l-q" maxlength="60" placeholder="Search name, action or detail" aria-label="Search the log"><button type="button" class="sp-btn sm" id="l-go">Search</button></div>
+                        <div class="tw"><table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Detail</th></tr></thead><tbody id="l-body"></tbody></table></div>
+                    </div>
+                </div>
+
+                <div id="tab-data" role="tabpanel" hidden>
+                    <div class="sp-card"><h3>Export (CSV)</h3>
+                        <p class="sp-meta">Opens in Excel or Google Sheets.</p>
+                        <div class="sp-actions" id="x-links"></div>
+                    </div>
+                    <div class="sp-card"><h3>Tidy old data</h3>
+                        <p class="sp-meta">Permanently deletes finished or old records. Export first if you may need them.</p>
+                        <div class="sp-inline">
+                            <select id="p-what" aria-label="What to delete"><option value="audit">Activity log</option><option value="loa">Finished LOA</option><option value="duty">Old shifts</option><option value="tasks">Done tasks</option></select>
+                            <select id="p-days" aria-label="Older than"><option value="30">older than 30 days</option><option value="90" selected>older than 90 days</option><option value="180">older than 180 days</option><option value="365">older than 1 year</option></select>
+                            <button type="button" class="sp-btn bad sm" id="p-go">Delete</button>
                         </div>
-                        <label for="loa-reason">Reason</label>
-                        <textarea id="loa-reason" maxlength="500"></textarea>
-                        <button type="button" class="sp-btn" id="loa-send">Send request</button>
                     </div>
-                    <div class="sp-card"><h3>My requests</h3><div id="loa-mine"></div></div>
-                    <div class="sp-card" id="loa-all-card" hidden>
-                        <h3>All requests</h3>
-                        <label for="loa-filter">Show</label>
-                        <select id="loa-filter"><option value="pending">Waiting for a decision</option><option value="approved">Approved</option><option value="denied">Denied</option><option value="cancelled">Cancelled</option><option value="">Everything</option></select>
-                        <div id="loa-all"></div>
-                    </div>
-                </div>
-
-                <div id="tab-duty" role="tabpanel" hidden>
-                    <div class="sp-card sp-hero">
-                        <div><h3 id="duty-status">Off duty</h3><div class="sp-meta" id="duty-sub"></div></div>
-                        <button type="button" class="sp-btn sp-clock" id="duty-clock">Clock in</button>
-                    </div>
-                    <div class="sp-card"><h3>On duty now</h3><div id="duty-now"></div></div>
-                    <div class="sp-card" id="duty-week-card" hidden><h3>Hours this week</h3><div class="sp-meta">Monday to Sunday (UTC). A shift never counts for more than 12 hours.</div><div id="duty-week"></div></div>
-                </div>
-
-                <div id="tab-tasks" role="tabpanel" hidden>
-                    <div class="sp-card" id="task-form-card" hidden>
-                        <h3>New task</h3>
-                        <label for="task-title">Title</label><input type="text" id="task-title" maxlength="120">
-                        <label for="task-detail">Details (optional)</label><textarea id="task-detail" maxlength="1000"></textarea>
-                        <div class="sp-row">
-                            <div><label for="task-who">Assign to</label><select id="task-who"><option value="">Anyone</option></select></div>
-                            <div><label for="task-due">Due (optional)</label><input type="date" id="task-due"></div>
-                        </div>
-                        <button type="button" class="sp-btn" id="task-send">Add task</button>
-                    </div>
-                    <div class="sp-card"><h3 id="task-title-h">My tasks</h3><div id="task-list"></div></div>
-                </div>
-
-                <div id="tab-strikes" role="tabpanel" hidden>
-                    <div class="sp-card" id="strike-form-card" hidden>
-                        <h3>Issue a strike</h3>
-                        <div class="sp-row">
-                            <div><label for="strike-who">Member</label><select id="strike-who"></select></div>
-                            <div><label for="strike-days">Expires</label><select id="strike-days"><option value="30">After 30 days</option><option value="60">After 60 days</option><option value="90" selected>After 90 days</option><option value="180">After 180 days</option><option value="365">After 1 year</option><option value="0">Never</option></select></div>
-                        </div>
-                        <label for="strike-reason">Reason</label><textarea id="strike-reason" maxlength="400"></textarea>
-                        <button type="button" class="sp-btn bad" id="strike-send">Issue strike</button>
-                    </div>
-                    <div class="sp-card"><h3 id="strike-h">My strikes</h3><div id="strike-list"></div></div>
-                </div>
-
-                <div id="tab-roster" role="tabpanel" hidden>
-                    <div class="sp-card"><h3>Staff roster</h3>
-                        <p class="sp-meta">People appear here after their first login.</p>
-                        <div class="tw"><table><thead><tr><th>Name</th><th>Rank</th><th>Last login</th><th id="roster-notes-h" hidden>Notes</th><th id="roster-edit-h" hidden></th></tr></thead><tbody id="roster-body"></tbody></table></div>
-                    </div>
-                    <div class="sp-card" id="rank-log-card" hidden><h3>Rank changes</h3><div id="rank-log"></div></div>
                 </div>
             </div>
 
@@ -309,7 +266,7 @@ a.sp-tile:hover { border-color: var(--blue-bright); }
 <script src="/assets/js/content.js?v=20261009-2"></script>
 <script src="/assets/js/app.js?v=20261009-2"></script>
 <script src="/assets/js/staff-common.js?v=2"></script>
-<script src="/assets/js/staff.js?v=2"></script>
+<script src="/assets/js/staff-admin.js?v=2"></script>
 
 </body>
 </html>

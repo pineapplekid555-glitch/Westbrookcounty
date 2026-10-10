@@ -109,10 +109,14 @@ export async function requireStaff(context, min = LEVEL.staff) {
   const token = parseCookies(request)[SESSION_COOKIE];
   if (!token || !/^[0-9a-f]{64}$/.test(token)) return { response: apiError(401, "Please log in.") };
 
+  const tokenHash = await sha256Hex(token);
   const row = await DB.prepare(
-    "SELECT discord_id, name, avatar, level, expires_at FROM staff_sessions WHERE token_hash = ?1"
-  ).bind(await sha256Hex(token)).first();
+    `SELECT s.discord_id, s.name, s.avatar, s.level, s.expires_at, COALESCE(a.suspended, 0) AS suspended
+       FROM staff_sessions s LEFT JOIN staff_access a ON a.discord_id = s.discord_id
+      WHERE s.token_hash = ?1`
+  ).bind(tokenHash).first();
   if (!row || Number(row.expires_at) < nowSec()) return { response: apiError(401, "Please log in.") };
+  if (Number(row.suspended) === 1) return { response: apiError(403, "Your portal access is suspended. Ask an admin.") };
 
   const level = Number(row.level);
   if (level < min) return { response: apiError(403, "You do not have access to this.") };
@@ -126,7 +130,7 @@ export async function requireStaff(context, min = LEVEL.staff) {
     }
   }
 
-  return { DB, user: { id: row.discord_id, name: row.name, avatar: row.avatar, level } };
+  return { DB, tokenHash, user: { id: row.discord_id, name: row.name, avatar: row.avatar, level } };
 }
 
 export const validDate = (s) => {
@@ -134,3 +138,40 @@ export const validDate = (s) => {
   const t = Date.parse(s + "T00:00:00Z");
   return Number.isFinite(t) && new Date(t).toISOString().slice(0, 10) === s ? t : null;
 };
+
+// ---- shared helpers for the newer features
+
+export const todayStr = () => new Date().toISOString().slice(0, 10);
+
+// Monday 00:00 UTC of the current week, in seconds.
+export function weekStart(now = nowSec()) {
+  const d = new Date(now * 1000);
+  const day = (d.getUTCDay() + 6) % 7; // Monday = 0
+  return Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - day) / 1000);
+}
+
+// A shift that was never closed counts for at most this long.
+export const MAX_SHIFT = 12 * 60 * 60;
+
+// Reads a JSON body or answers with a clean error. Returns { body } or { response }.
+export async function readBody(context, max = 4096) {
+  try {
+    const { readJson } = await import("./common.js");
+    return { body: await readJson(context.request, max) };
+  } catch (e) {
+    return { response: apiError(e?.status || 400, e?.status ? e.message : "Bad request.") };
+  }
+}
+
+// What a member's level was the last time they logged in (1 if we have never seen them).
+export async function levelOf(DB, discordId) {
+  const r = await DB.prepare("SELECT level FROM staff_access WHERE discord_id = ?1").bind(discordId).first();
+  return r ? Number(r.level) : LEVEL.staff;
+}
+
+export function csvCell(v) {
+  let s = v == null ? "" : String(v);
+  // Spreadsheets run text that starts with = + - @ as a formula; make it plain text.
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return '"' + s.replace(/"/g, '""') + '"';
+}

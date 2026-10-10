@@ -37,18 +37,27 @@ export async function onRequestPost(context) {
     await audit(context.env, user, "announce.create", `#${row?.id} ${title}`);
 
     let sent = false;
-    const hook = String(context.env.STAFF_ANNOUNCE_WEBHOOK || "");
-    if (body.notifyDiscord === true && /^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(hook)) {
+    if (body.notifyDiscord === true) {
+      const payload = JSON.stringify({
+        allowed_mentions: { parse: [] },
+        embeds: [{ title, description: text.slice(0, 1800), footer: { text: "Posted by " + user.name } }]
+      });
+      const hook = String(context.env.STAFF_ANNOUNCE_WEBHOOK || "");
+      const botToken = String(context.env.DISCORD_BOT_TOKEN || "");
+      const channel = String(context.env.STAFF_CHAT_CHANNEL_ID || "");
       try {
-        const res = await fetch(hook, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            allowed_mentions: { parse: [] },
-            embeds: [{ title, description: text.slice(0, 1800), footer: { text: "Posted by " + user.name } }]
-          })
-        });
-        sent = res.ok;
+        let res = null;
+        if (botToken && /^\d{15,25}$/.test(channel)) {
+          // post as the bot into the staff chat channel
+          res = await fetch(`https://discord.com/api/v10/channels/${channel}/messages`, {
+            method: "POST",
+            headers: { "content-type": "application/json", authorization: `Bot ${botToken}` },
+            body: payload
+          });
+        } else if (/^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(hook)) {
+          res = await fetch(hook, { method: "POST", headers: { "content-type": "application/json" }, body: payload });
+        }
+        sent = Boolean(res && res.ok);
       } catch { /* the announcement is saved either way */ }
     }
     return json({ success: true, id: row?.id, discordSent: sent });

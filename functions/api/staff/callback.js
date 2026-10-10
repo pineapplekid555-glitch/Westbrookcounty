@@ -77,6 +77,15 @@ export async function onRequestGet(context) {
 
   const DB = getDB(env);
   const now = nowSec();
+  const access = await DB.prepare("SELECT suspended FROM staff_access WHERE discord_id = ?1").bind(user.id).first();
+  if (access && Number(access.suspended) === 1) {
+    await audit(env, user, "login.blocked", "suspended");
+    return back(origin, "suspended");
+  }
+  await DB.prepare(
+    `INSERT INTO staff_access (discord_id, level) VALUES (?1, ?2)
+     ON CONFLICT(discord_id) DO UPDATE SET level = excluded.level`
+  ).bind(user.id, level).run();
   await DB.prepare(
     `INSERT INTO staff_roster (discord_id, name, avatar, rank, notes, first_login, last_login)
      VALUES (?1, ?2, ?3, '', '', ?4, ?4)
