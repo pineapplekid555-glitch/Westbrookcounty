@@ -491,8 +491,20 @@ local function execute(cmd)
 			}
 			return old
 		end)
+		-- Roblox's own ban too: with ExcludeAltAccounts = false it also bans the person's other accounts
+		-- that Roblox detects (the alt / IP-based detection ER:LC uses). The saved list above stays the source of truth.
+		local okBan, banErr = pcall(function()
+			Players:BanAsync({
+				UserIds = { cmd.userId },
+				Duration = (cmd.durationSeconds and cmd.durationSeconds > 0) and cmd.durationSeconds or -1,
+				DisplayReason = string.sub(tostring(cmd.reason), 1, 400),
+				PrivateReason = string.sub("Banned by " .. tostring(cmd.by) .. " from the staff website", 1, 1000),
+				ExcludeAltAccounts = false,
+				ApplyToUniverse = true,
+			})
+		end)
 		broadcast("kick", cmd.userId, "You are banned from this game.\nReason: " .. tostring(cmd.reason))
-		return "banned"
+		return okBan and "banned (alt accounts included)" or ("banned (Roblox alt ban failed: " .. tostring(banErr) .. ")")
 	elseif cmd.type == "unban" then
 		local key = tostring(cmd.userId)
 		banStore:UpdateAsync(BAN_INDEX_KEY, function(old)
@@ -500,6 +512,7 @@ local function execute(cmd)
 			old[key] = nil
 			return old
 		end)
+		pcall(function() Players:UnbanAsync({ UserIds = { cmd.userId }, ApplyToUniverse = true }) end)
 		return "unbanned"
 	elseif EDITS[cmd.type] then
 		return applyEdit(cmd)
