@@ -18,3 +18,5 @@ CREATE TABLE IF NOT EXISTS mod_actions (id INTEGER PRIMARY KEY AUTOINCREMENT, us
 CREATE INDEX IF NOT EXISTS idx_mod_actions_user ON mod_actions (user_id, id);
 CREATE TABLE IF NOT EXISTS mod_queue (id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, user_id INTEGER NOT NULL DEFAULT 0, username TEXT NOT NULL DEFAULT '', reason TEXT NOT NULL DEFAULT '', duration_secs INTEGER, created_by_id TEXT NOT NULL DEFAULT '', created_by_name TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'pending', claimed_at INTEGER, done_at INTEGER, result TEXT NOT NULL DEFAULT '', action_id INTEGER, payload TEXT NOT NULL DEFAULT '');
 CREATE INDEX IF NOT EXISTS idx_mod_queue_status ON mod_queue (status, id);
+CREATE TABLE IF NOT EXISTS mod_links (alt_id INTEGER PRIMARY KEY, main_id INTEGER NOT NULL, linked_by TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_mod_links_main ON mod_links (main_id);

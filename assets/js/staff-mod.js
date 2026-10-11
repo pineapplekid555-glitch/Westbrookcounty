@@ -83,11 +83,11 @@
         if (a && box.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
         return Array.prototype.some.call(box.querySelectorAll("input,textarea"), function (el) { return el.value !== ""; });
     }
-    function openProfile(id, silent) {
-        if (silent && profileBusy()) return;
+    function openProfile(id, silent, force) {
+        if (silent && !force && profileBusy()) return;
         if (!silent) curProfile = String(id);
         api("/api/staff/mod/lookup?id=" + encodeURIComponent(id)).then(function (d) {
-            if (silent && (profileBusy() || curProfile !== String(id))) return;
+            if (silent && ((!force && profileBusy()) || curProfile !== String(id))) return;
             canAct = d.canAct;
             catalog = Array.isArray(d.vehicleCatalog) ? d.vehicleCatalog : [];
             var p = d.player, box = clear($("profile")); box.hidden = false;
@@ -110,7 +110,8 @@
             st.appendChild(stat("DOT XP", num(p.xp.dot)));
             st.appendChild(stat("First joined", p.firstJoined ? when(p.firstJoined) : "unknown"));
             st.appendChild(stat("Last joined", p.lastJoined ? when(p.lastJoined) : "unknown"));
-            st.appendChild(stat("Roblox account created", p.accountCreated ? when(p.accountCreated) : "unknown"));
+            var created = (d.roblox && d.roblox.created) || p.accountCreated;
+            st.appendChild(stat("Roblox account created", created ? when(created) : "unknown"));
             st.appendChild(stat("Time played", dur(p.playtimeSecs)));
             var bans = d.actions.filter(function (a) { return a.type === "ban"; }).length;
             var warns = d.actions.filter(function (a) { return a.type === "warn"; }).length;
@@ -126,6 +127,10 @@
                 card.appendChild(row);
             }
             box.appendChild(card);
+
+            box.appendChild(robloxCard(d.roblox, p));
+            box.appendChild(botCard(p, d));
+            box.appendChild(linksCard(p, d));
 
             var vehicles = h("div", { class: "sp-card" }, h("h3", { text: "Vehicles owned (" + p.vehicles.length + ")" }));
             if (!p.vehicles.length) vehicles.appendChild(empty("None recorded."));
@@ -169,6 +174,95 @@
         else if (curTab === "bans") loadBans(true);
         else if (curTab === "log") loadLog(true);
     }, REFRESH_MS);
+
+    // ---- Roblox account facts, bot / alt estimate, linked accounts
+    function robloxCard(r, p) {
+        var card = h("div", { class: "sp-card" }, h("h3", { text: "Roblox account" }));
+        if (!r) { card.appendChild(empty("Roblox could not be reached, so account details are not available right now.")); return card; }
+        var st = h("div", { class: "sp-stats" });
+        st.appendChild(stat("Account age", r.ageDays == null ? "unknown" : r.ageDays.toLocaleString("en-GB") + " days"));
+        st.appendChild(stat("Account created", r.created ? when(r.created) : (p.accountCreated ? when(p.accountCreated) : "unknown")));
+        st.appendChild(stat("Friends", r.friends == null ? "unknown" : num(r.friends)));
+        st.appendChild(stat("Followers", r.followers == null ? "unknown" : num(r.followers)));
+        st.appendChild(stat("Following", r.following == null ? "unknown" : num(r.following)));
+        st.appendChild(stat("Groups joined", r.groups == null ? "unknown" : num(r.groups)));
+        st.appendChild(stat("Profile description", r.hasDescription == null ? "unknown" : r.hasDescription ? "Yes" : "Empty"));
+        if (r.robloxBanned) st.appendChild(stat("Roblox status", "Banned by Roblox"));
+        card.appendChild(st);
+        card.appendChild(h("div", { class: "sp-meta", text: "Public Roblox data, refreshed about once an hour (last checked " + when(r.fetchedAt) + ")." }));
+        return card;
+    }
+
+    var VERDICTS = { likely_bot: ["Likely a bot", "bad"], likely_alt: ["Likely an alt", "warn"], likely_real: ["Looks like a normal account", "ok"], unclear: ["Unclear", ""] };
+    function meter(label, pct) {
+        return h("div", null, h("div", null, h("strong", { text: label + ": " + pct + "%" })),
+            h("div", { class: "sp-meter " + (pct >= 70 ? "hot" : pct >= 40 ? "mid" : "") }, h("i", { style: "width:" + Math.max(0, Math.min(100, Number(pct) || 0)) + "%" })));
+    }
+    function botCard(p, d) {
+        var a = d.assessment;
+        var card = h("div", { class: "sp-card" }, h("h3", { text: "Bot / alt check" }));
+        if (!a) card.appendChild(h("div", { class: "sp-meta", text: "Not checked yet. The AI looks at the account's age, friends, followers, username, game history and similar accounts, then estimates how likely it is to be a bot or an alt." }));
+        else {
+            var v = VERDICTS[a.verdict] || VERDICTS.unclear;
+            card.appendChild(h("div", null, h("span", { class: "sp-pill " + v[1], text: v[0] }), " ", h("span", { class: "sp-meta", text: (a.source === "ai" ? "AI estimate" : "Rule-based estimate (AI unavailable)") + " · " + when(a.at) + (a.stale ? " · out of date" : "") })));
+            card.appendChild(h("div", { style: "margin-top:10px" }, meter("Chance it is a bot", a.botLikelihood), meter("Chance it is an alt", a.altLikelihood)));
+            if (a.summary) card.appendChild(h("div", { class: "sp-body", text: a.summary }));
+            if (a.reasons && a.reasons.length) card.appendChild(h("ul", null, a.reasons.map(function (r) { return h("li", { text: r }); })));
+            if (a.suggestedChecks && a.suggestedChecks.length) card.appendChild(h("div", { class: "sp-meta", text: "Worth checking: " + a.suggestedChecks.join(" · ") }));
+            card.appendChild(h("div", { class: "sp-meta", text: "This is only an estimate to help you decide. It cannot prove anything." }));
+        }
+        card.appendChild(h("div", { class: "sp-actions", style: "margin-top:10px" }, h("button", { type: "button", class: "sp-btn alt sm", text: a ? "Check again" : "Check with AI", onclick: function (e) {
+            busy(e.target, function () { return api("/api/staff/mod/assess", { user: String(p.userId) }).then(function () { openProfile(p.userId, true, true); }); });
+        } })));
+        return card;
+    }
+    function linkAction(body, doneText, p) {
+        return api("/api/staff/mod/action", body).then(function (r) {
+            say(doneText + (r.alsoBanned && r.alsoBanned.length ? " Also banned: " + r.alsoBanned.map(function (x) { return x.username || x.userId; }).join(", ") + "." : ""), "good");
+            openProfile(p.userId, true, true);
+        });
+    }
+    function linksCard(p, d) {
+        var L = d.links || { alts: [] }, card = h("div", { class: "sp-card" }, h("h3", { text: "Linked accounts" }));
+        card.appendChild(h("div", { class: "sp-meta", text: "If one account in a linked group is banned, every other account in it is banned too (like ER:LC). Unbanning only unbans the account you pick." }));
+        function row(x, label) {
+            var r = h("div", { class: "sp-item" }, h("strong", { text: (x.username || "Player " + x.userId) }), " ", h("span", { class: "sp-meta", text: "id " + x.userId + " · " + label }), x.banned ? h("span", { class: "sp-pill bad", text: " banned" }) : null, " ",
+                h("button", { type: "button", class: "sp-btn alt sm", text: "Look up", onclick: function () { openProfile(x.userId); } }));
+            if (d.canAct && label === "alt") r.appendChild(h("button", { type: "button", class: "sp-btn alt sm", text: "Unlink", onclick: function (e) {
+                if (!confirm("Unlink " + (x.username || x.userId) + " from this group?")) return;
+                busy(e.target, function () { return linkAction({ action: "unlink", user: String(x.userId) }, "Unlinked.", p); });
+            } }));
+            return r;
+        }
+        if (L.main) card.appendChild(row(L.main, "main account"));
+        (L.alts || []).forEach(function (x) { card.appendChild(row(x, "alt")); });
+        if (!L.main && !(L.alts || []).length) card.appendChild(empty("Not linked to any other account."));
+        if (L.isAlt && d.canAct) card.appendChild(h("div", { class: "sp-actions" }, h("button", { type: "button", class: "sp-btn alt sm", text: "Unlink this account from its main", onclick: function (e) {
+            busy(e.target, function () { return linkAction({ action: "unlink", user: String(p.userId) }, "Unlinked.", p); }); } })));
+        if (d.canAct && !L.isAlt) {
+            var rel = d.related || [];
+            if (rel.length) {
+                card.appendChild(h("div", { class: "sp-meta", style: "margin-top:12px", text: "Accounts with a similar name seen in this game:" }));
+                rel.forEach(function (x) {
+                    card.appendChild(h("div", { class: "sp-item" }, h("strong", { text: x.username }), " ", h("span", { class: "sp-meta", text: "id " + x.userId }), x.banned ? h("span", { class: "sp-pill bad", text: " banned" }) : null, " ",
+                        h("button", { type: "button", class: "sp-btn alt sm", text: "Look up", onclick: function () { openProfile(x.userId); } }), " ",
+                        h("button", { type: "button", class: "sp-btn sm", text: "Is an alt of this account", onclick: function (e) {
+                            if (!confirm("Link " + x.username + " as an alt of " + (p.username || p.userId) + "? Banning either will ban both.")) return;
+                            busy(e.target, function () { return linkAction({ action: "link", user: String(x.userId), main: String(p.userId) }, "Linked.", p); }); } }), " ",
+                        h("button", { type: "button", class: "sp-btn sm", text: "This is an alt of them", onclick: function (e) {
+                            if (!confirm("Link " + (p.username || p.userId) + " as an alt of " + x.username + "? Banning either will ban both.")) return;
+                            busy(e.target, function () { return linkAction({ action: "link", user: String(p.userId), main: String(x.userId) }, "Linked.", p); }); } })));
+                });
+            }
+            var mainIn = h("input", { type: "text", maxlength: "40", placeholder: "Main account (user id or username)", "aria-label": "Main account" });
+            card.appendChild(h("div", { class: "sp-inline", style: "margin-top:12px" }, mainIn, h("button", { type: "button", class: "sp-btn sm", text: "Link this account as its alt", onclick: function (e) {
+                if (!mainIn.value.trim()) return say("Enter the main account.", "err");
+                if (!confirm("Link " + (p.username || p.userId) + " as an alt of " + mainIn.value.trim() + "? Banning either will ban both.")) return;
+                busy(e.target, function () { return linkAction({ action: "link", user: String(p.userId), main: mainIn.value.trim() }, "Linked.", p); });
+            } })));
+        }
+        return card;
+    }
 
     // admin only: change a player's XP, money or vehicles (the server checks this again)
     function removeCard(p) {
@@ -287,12 +381,12 @@
     $("a-go").addEventListener("click", function (e) {
         var t = $("a-type").value, user = $("a-user").value.trim();
         var label = { ban: "Ban", unban: "Unban", kick: "Kick", warn: "Warn", note: "Add a note for" }[t];
-        if (t !== "note" && !confirm(label + " " + user + "?")) return;
+        if (t !== "note" && !confirm(label + " " + user + "?" + (t === "ban" ? "\n\nAny accounts linked to it as alts or main will be banned too." : ""))) return;
         var body = { action: t, user: user, reason: $("a-reason").value, notes: t === "note" ? $("a-reason").value : $("a-notes").value, days: Number($("a-days").value) };
         busy(e.target, function () {
-            return api("/api/staff/mod/action", body).then(function () {
+            return api("/api/staff/mod/action", body).then(function (r) {
                 $("a-reason").value = ""; $("a-notes").value = "";
-                say(t === "note" ? "Note saved." : "Sent. The game will carry it out within about 10 seconds.", "good");
+                say((t === "note" ? "Note saved." : "Sent. The game will carry it out within about 5 to 10 seconds.") + (r.alsoBanned && r.alsoBanned.length ? " Linked accounts also banned: " + r.alsoBanned.map(function (x) { return x.username || x.userId; }).join(", ") + "." : ""), "good");
             });
         });
     });

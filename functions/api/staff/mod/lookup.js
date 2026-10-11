@@ -3,7 +3,10 @@
 // Any staff member can look people up.
 import { requireStaff, nowSec, LEVEL } from "../../../_lib/staffAuth.js";
 import { json } from "../../../_lib/common.js";
-import { shapePlayer, shapeAction, isActiveBan, resolveRoblox, actLevel, touchStaff, getCatalog } from "../../../_lib/moderation.js";
+import { shapePlayer, shapeAction, isActiveBan, resolveRoblox, actLevel, touchStaff, getCatalog, getGroup, nameOf, hasActiveBan } from "../../../_lib/moderation.js";
+import { getRobloxInfo } from "../../../_lib/robloxInfo.js";
+import { readCached } from "../../../_lib/botcheck.js";
+import { similarAccounts } from "./assess.js";
 
 export async function onRequestGet(context) {
   const auth = await requireStaff(context, LEVEL.staff);
@@ -26,8 +29,23 @@ export async function onRequestGet(context) {
       if (!actions.length && !r) return json({ success: false, error: "Nobody found with that id." }, 404);
     } else player.seen = true;
     const pending = (await DB.prepare("SELECT id, type, reason, created_by_name, created_at, status FROM mod_queue WHERE user_id = ?1 AND status IN ('pending','claimed') ORDER BY id DESC LIMIT 10").bind(uid).all()).results || [];
+    // public Roblox facts (cached for an hour), linked accounts, similar usernames, and the last bot/alt estimate
+    const roblox = await getRobloxInfo(DB, uid).catch(() => null);
+    if (roblox?.created) roblox.ageDays = Math.max(0, Math.floor((now - roblox.created) / 86400));
+    if (player && !player.username && roblox?.username) player.username = roblox.username;
+    if (player && !player.displayName && roblox?.displayName) player.displayName = roblox.displayName;
+    const group = await getGroup(DB, uid);
+    const linkedIds = group.ids.filter((x) => x !== uid);
+    const links = { isAlt: group.isAlt, main: null, alts: [] };
+    for (const lid of linkedIds) {
+      const entry = { userId: lid, username: await nameOf(DB, lid), banned: !!(await hasActiveBan(DB, lid, now)) };
+      if (lid === group.main) links.main = entry; else links.alts.push(entry);
+    }
+    const related = (await similarAccounts(DB, uid, player?.username || roblox?.username)).filter((x) => !group.ids.includes(x.userId));
     return json({
       success: true,
+      roblox, links, related,
+      assessment: await readCached(DB, uid),
       player,
       activeBan: actions.find((a) => isActiveBan(a, now)) ? shapeAction(actions.find((a) => isActiveBan(a, now)), now) : null,
       actions: actions.map((a) => shapeAction(a, now)),

@@ -2,7 +2,7 @@ import { json, checkAuth, readJson, clean, storeResult, HttpError } from "../com
 import { askAI } from "../ai.js";
 import { buildAntiCheatPrompt } from "../guidelines.js";
 import { getDB, nowSec } from "../staffAuth.js";
-import { recordAction, rememberName } from "../moderation.js";
+import { recordAction, rememberName, cascadeBan } from "../moderation.js";
 
 // POST /api/anticheat/report
 // Called by the Roblox game server every time the anti-cheat flags a player:
@@ -146,6 +146,8 @@ export async function handle(context) {
         ).bind(userId, uname, clean(body.violationType, 60), [clean(body.details, 1000), Object.keys(ctxFacts).length ? "Context: " + contextLine(ctxFacts) : ""].filter(Boolean).join("\n").slice(0, 1500), at, at - 900).first();
         if (!row) return json({ success: true, duplicate: true, reviewed: false });
         autoBanRowId = row.id;
+        // like ER:LC: banning an alt also bans the main account (and the other way round)
+        context.waitUntil(cascadeBan(DB, context.env, { userId, username: uname, reason: clean(body.violationType, 60) + " (anti-cheat)", byName: "Anti-cheat" }, at).catch(() => {}));
       } catch {}
     }
   }
@@ -178,7 +180,7 @@ export async function handle(context) {
   };
 
   // Prefer the free Cloudflare Workers AI for this text-only task; falls back to any other provider.
-  const ai = await askAI(context.env, [{ text: buildAntiCheatPrompt(report) }], { prefer: "workers-ai" });
+  const ai = await askAI(context.env, [{ text: buildAntiCheatPrompt(report) }], { prefer: "workers-ai", maxTokens: 800 });
   if (!ai.ok || !ai.value || typeof ai.value !== "object") {
     return finish({ reviewed: false, verdict: "inconclusive", confidence: 0, severity: "low", recommendedAction: "staff_review", reason: "AI review unavailable." }, { error: ai.error || "Bad AI answer" });
   }

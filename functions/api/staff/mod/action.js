@@ -7,12 +7,13 @@
 //   {action:"note", user, notes}                     internal note (any staff member)
 //   ADMIN ONLY (whatever MOD_ACTION_LEVEL is):
 //   {action:"removexp"|"givexp", user, pool:"police"|"fire"|"dot", amount, reason}   {action:"removemoney"|"givemoney", user, amount, reason}   {action:"removevehicle"|"givevehicle", user, vehicle, reason}
+//   {action:"link", user, main}                      mark `user` as an alt of `main` (banning either bans the whole group)   {action:"unlink", user}
 //   {action:"review", id}                            mark an anti-cheat ban as checked
 //   {action:"cancel", queueId}                       withdraw a command the game has not picked up yet
 // Allowed for the level in MOD_ACTION_LEVEL (default manager). Ids in MOD_PROTECTED_USER_IDS can never be banned or kicked here.
 import { requireStaff, audit, nowSec, LEVEL, readBody } from "../../../_lib/staffAuth.js";
 import { json, clean } from "../../../_lib/common.js";
-import { getCatalog, actLevel, protectedIds, findTarget, recordAction, rememberName, ensurePayloadColumn, MAX_BAN_SECONDS, EDIT_TYPES, XP_POOLS } from "../../../_lib/moderation.js";
+import { getCatalog, getGroup, cascadeBan, hasActiveBan, actLevel, protectedIds, findTarget, recordAction, rememberName, ensurePayloadColumn, MAX_BAN_SECONDS, EDIT_TYPES, XP_POOLS } from "../../../_lib/moderation.js";
 
 const bad = (msg, status = 400) => json({ success: false, error: msg }, status);
 
@@ -60,7 +61,7 @@ export async function onRequestPost(context) {
     return json({ success: true });
   }
 
-  if (![...EDIT_TYPES, "ban", "unban", "kick", "warn", "note"].includes(action)) return bad("Unknown action.");
+  if (![...EDIT_TYPES, "ban", "unban", "kick", "warn", "note", "link", "unlink"].includes(action)) return bad("Unknown action.");
   const target = await findTarget(DB, b.user);
   if (!target) return bad("Could not find that player. Try their Roblox user id.", 404);
   const label = target.username ? `${target.username} (${target.userId})` : String(target.userId);
@@ -72,6 +73,39 @@ export async function onRequestPost(context) {
     await recordAction(DB, { userId: target.userId, username: target.username, type: "note", notes, byId: user.id, byName: user.name }, now);
     await audit(context.env, user, "mod.note", label);
     return json({ success: true });
+  }
+
+  if (action === "link" || action === "unlink") {
+    if (action === "unlink") {
+      const r = await DB.prepare("DELETE FROM mod_links WHERE alt_id = ?1").bind(target.userId).run();
+      if (!(r.meta?.changes > 0)) return bad("That account is not linked as an alt of anything.", 404);
+      await recordAction(DB, { userId: target.userId, username: target.username, type: "note", notes: "Unlinked from its main account.", byId: user.id, byName: user.name }, now);
+      await audit(context.env, user, "mod.unlink", label);
+      return json({ success: true });
+    }
+    const main = await findTarget(DB, b.main);
+    if (!main) return bad("Could not find the main account. Try its Roblox user id.", 404);
+    if (main.userId === target.userId) return bad("An account cannot be its own alt.");
+    const mainGroup = await getGroup(DB, main.userId);
+    const altGroup = await getGroup(DB, target.userId);
+    if (altGroup.isAlt) return bad("That account is already linked as an alt. Unlink it first.", 409);
+    if (altGroup.alts.length) return bad("That account is already the main account for other alts. Unlink those first.", 409);
+    if (mainGroup.isAlt) return bad(`${main.username || main.userId} is itself an alt. Link to its main account instead (${mainGroup.main}).`, 409);
+    await rememberName(DB, target.userId, target.username, now);
+    await rememberName(DB, main.userId, main.username, now);
+    await DB.prepare("INSERT INTO mod_links (alt_id, main_id, linked_by, created_at) VALUES (?1, ?2, ?3, ?4)").bind(target.userId, main.userId, user.name, now).run();
+    const mname = main.username ? `${main.username} (${main.userId})` : String(main.userId);
+    await recordAction(DB, { userId: target.userId, username: target.username, type: "note", notes: `Linked as an alt of ${mname}.`, byId: user.id, byName: user.name }, now);
+    await recordAction(DB, { userId: main.userId, username: main.username, type: "note", notes: `${label} linked as an alt of this account.`, byId: user.id, byName: user.name }, now);
+    await audit(context.env, user, "mod.link", `${label} is an alt of ${mname}`);
+    // if one of them is already banned, bring the other in line straight away
+    const banned = (await hasActiveBan(DB, target.userId, now)) ? target : (await hasActiveBan(DB, main.userId, now)) ? main : null;
+    let alsoBanned = [];
+    if (banned) {
+      const row = await DB.prepare("SELECT reason, duration_secs FROM mod_actions WHERE user_id = ?1 AND type = 'ban' AND active = 1 ORDER BY id DESC LIMIT 1").bind(banned.userId).first();
+      alsoBanned = await cascadeBan(DB, context.env, { userId: banned.userId, username: banned.username, reason: row?.reason, durationSecs: row?.duration_secs || 0, byId: user.id, byName: user.name }, now);
+    }
+    return json({ success: true, alsoBanned });
   }
 
   if ((action === "ban" || action === "kick") && protectedIds(context.env).includes(String(target.userId))) {
@@ -122,8 +156,9 @@ export async function onRequestPost(context) {
     const secs = days * 86400;
     const id = await recordAction(DB, { userId: target.userId, username: target.username, type: "ban", reason, notes: clean(b.notes, 300), byId: user.id, byName: user.name, durationSecs: secs }, now);
     const q = await queue("ban", target, reason, secs, id);
-    await audit(context.env, user, "mod.ban", `${label}: ${reason} (${days ? days + "d" : "permanent"})`);
-    return json({ success: true, id, queueId: q?.id });
+    const alsoBanned = await cascadeBan(DB, context.env, { userId: target.userId, username: target.username, reason, durationSecs: secs, byId: user.id, byName: user.name }, now);
+    await audit(context.env, user, "mod.ban", `${label}: ${reason} (${days ? days + "d" : "permanent"})` + (alsoBanned.length ? ` (also banned linked: ${alsoBanned.map((x) => x.username || x.userId).join(", ")})` : ""));
+    return json({ success: true, id, queueId: q?.id, alsoBanned });
   }
 
   const id = await recordAction(DB, { userId: target.userId, username: target.username, type: action, reason, byId: user.id, byName: user.name }, now);

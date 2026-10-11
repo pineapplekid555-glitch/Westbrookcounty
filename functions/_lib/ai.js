@@ -38,7 +38,7 @@ async function postJson(url, headers, body) {
 const PROVIDERS = {
   anthropic: {
     configured: (env) => !!env.ANTHROPIC_API_KEY,
-    async run(env, parts) {
+    async run(env, parts, opts = {}) {
       const model = env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001";
       const content = parts.map((p) =>
         p.inline_data
@@ -48,7 +48,7 @@ const PROVIDERS = {
       const data = await postJson(
         "https://api.anthropic.com/v1/messages",
         { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-        { model, max_tokens: 400, temperature: 0, messages: [{ role: "user", content }] }
+        { model, max_tokens: opts.maxTokens || 400, temperature: 0, messages: [{ role: "user", content }] }
       );
       const text = (data.content || []).map((c) => c.text || "").join("");
       return { model, text };
@@ -57,7 +57,7 @@ const PROVIDERS = {
 
   openai: {
     configured: (env) => !!env.OPENAI_API_KEY,
-    async run(env, parts) {
+    async run(env, parts, opts = {}) {
       const model = env.OPENAI_MODEL || "gpt-4o-mini";
       const content = parts.map((p) =>
         p.inline_data
@@ -75,7 +75,7 @@ const PROVIDERS = {
 
   gemini: {
     configured: (env) => !!env.GEMINI_API_KEY,
-    async run(env, parts) {
+    async run(env, parts, opts = {}) {
       const model = env.GEMINI_MODEL || "gemini-3.7-flash";
       const data = await postJson(
         "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent",
@@ -89,11 +89,11 @@ const PROVIDERS = {
 
   "workers-ai": {
     configured: (env) => !!env.AI && typeof env.AI.run === "function",
-    async run(env, parts) {
+    async run(env, parts, opts = {}) {
       if (hasImages(parts)) throw new Error("Workers AI path is text-only");
       const model = env.WORKERS_AI_MODEL || "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
       const prompt = parts.map((p) => p.text).join("\n\n");
-      const out = await env.AI.run(model, { messages: [{ role: "user", content: prompt }], max_tokens: 400 });
+      const out = await env.AI.run(model, { messages: [{ role: "user", content: prompt }], max_tokens: opts.maxTokens || 400 });
       const text = typeof out === "string" ? out : typeof out?.response === "string" ? out.response : JSON.stringify(out?.response ?? "");
       return { model, text };
     }
@@ -122,7 +122,7 @@ export async function askAI(env, parts, opts = {}) {
       continue;
     }
     try {
-      const { model, text } = await PROVIDERS[name].run(env, parts);
+      const { model, text } = await PROVIDERS[name].run(env, parts, opts);
       return { ok: true, provider: name, model, value: extractJson(text) };
     } catch (e) {
       errors.push(name + ": " + (e && e.message ? e.message : "failed"));

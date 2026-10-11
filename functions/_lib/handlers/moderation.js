@@ -1,6 +1,7 @@
 import { json, checkAuth, readJson, clean, HttpError } from "../common.js";
 import { getDB, nowSec } from "../staffAuth.js";
 import {
+  cascadeBan,
   cleanProfile, savePlayer, rememberName, recordAction, ACTION_TYPES, EDIT_TYPES, ensurePayloadColumn, ensureStateTable, pollInterval, wantedRefreshes, MAX_BAN_SECONDS, CLAIM_TIMEOUT, SHORT_LIVED, POLL_SECONDS
 } from "../moderation.js";
 
@@ -83,6 +84,7 @@ export async function handle(context) {
         userId, username, type, reason: clean(body.reason, 300), notes: clean(body.details, 300),
         source: auto ? "auto" : "game", byName: auto ? "Anti-cheat" : by, durationSecs: dur
       }, now);
+      if (type === "ban") await cascadeBan(DB, context.env, { userId, username, reason: clean(body.reason, 300), durationSecs: dur, byName: auto ? "Anti-cheat" : by }, now).catch(() => {});
       return json({ success: true, id });
     }
 

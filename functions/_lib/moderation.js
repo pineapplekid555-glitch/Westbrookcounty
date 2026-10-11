@@ -234,3 +234,53 @@ export async function findTarget(DB, input) {
   const r = await resolveRoblox(s);
   return r ? { userId: r.userId, username: r.username } : null;
 }
+
+
+// ---------------------------------------------------------------- linked (alt) accounts
+// A main account and its alts form one group. Banning any account in the group bans the rest (like ER:LC).
+let linksChecked = false;
+async function ensureLinksTable(DB) {
+  if (linksChecked) return;
+  try {
+    await DB.prepare("CREATE TABLE IF NOT EXISTS mod_links (alt_id INTEGER PRIMARY KEY, main_id INTEGER NOT NULL, linked_by TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL)").run();
+    await DB.prepare("CREATE INDEX IF NOT EXISTS idx_mod_links_main ON mod_links (main_id)").run();
+  } catch { /* ignore */ }
+  linksChecked = true;
+}
+export async function getGroup(DB, userId) {
+  await ensureLinksTable(DB);
+  const uid = Number(userId);
+  const mine = await DB.prepare("SELECT main_id FROM mod_links WHERE alt_id = ?1").bind(uid).first();
+  const main = mine ? Number(mine.main_id) : uid;
+  const alts = ((await DB.prepare("SELECT alt_id, linked_by, created_at FROM mod_links WHERE main_id = ?1 ORDER BY created_at").bind(main).all()).results || []).map((r) => ({ userId: Number(r.alt_id), linkedBy: r.linked_by, at: r.created_at }));
+  return { main, isAlt: !!mine, alts, ids: [main, ...alts.map((a) => a.userId)] };
+}
+
+export async function nameOf(DB, userId) {
+  const r = await DB.prepare("SELECT username FROM mod_players WHERE user_id = ?1").bind(Number(userId)).first();
+  if (r?.username) return r.username;
+  const a = await DB.prepare("SELECT username FROM mod_actions WHERE user_id = ?1 AND username != '' ORDER BY id DESC LIMIT 1").bind(Number(userId)).first();
+  return a?.username || "";
+}
+
+export const hasActiveBan = (DB, userId, now = nowSec()) =>
+  DB.prepare("SELECT id FROM mod_actions WHERE user_id = ?1 AND type = 'ban' AND active = 1 AND (expires_at IS NULL OR expires_at > ?2)").bind(Number(userId), now).first();
+
+// Ban every other account linked to this one. Skips protected ids and accounts that are already banned.
+export async function cascadeBan(DB, env, { userId, username, reason, durationSecs = 0, byId = "", byName = "" }, now = nowSec()) {
+  const out = [];
+  let group;
+  try { group = await getGroup(DB, userId); } catch { return out; }
+  const protectedList = protectedIds(env);
+  const why = clean(`Linked account ${username || userId} was banned: ${reason || "no reason given"}`, 300);
+  for (const id of group.ids) {
+    if (id === Number(userId) || protectedList.includes(String(id))) continue;
+    if (await hasActiveBan(DB, id, now)) continue;
+    const name = await nameOf(DB, id);
+    const actionId = await recordAction(DB, { userId: id, username: name, type: "ban", reason: why, notes: "Banned automatically because a linked account was banned.", source: "linked", byId, byName: byName || "Linked account", durationSecs }, now);
+    await DB.prepare("INSERT INTO mod_queue (type, user_id, username, reason, duration_secs, created_by_id, created_by_name, created_at, action_id) VALUES ('ban', ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)")
+      .bind(id, name, why, durationSecs || null, byId, (byName || "Linked account") + " (linked account)", now, actionId).run();
+    out.push({ userId: id, username: name });
+  }
+  return out;
+}
