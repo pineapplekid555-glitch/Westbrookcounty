@@ -135,7 +135,7 @@ window.WESTBROOK_CONTENT = {
                 "Fixed Fire ELS"
                 "Fixed auto shop bug where civilian and police vehicles were being mixed up"
                 "Anti-exploit/cheat has been upgraded as some false bans were given out"
-                "Stronger API"
+                "Added new police lightbars"
                 "DMV record changing fixed"
                 "Custom street light colors in private servers"
                 "Changeable licence plates in private servers (UK, US, Custom & More)"
