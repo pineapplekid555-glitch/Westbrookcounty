@@ -126,19 +126,19 @@ window.WESTBROOK_CONTENT = {
             tag: "Update",
             image: "",
             items: [
-                "New police liveries"
-                "Added seasons to the game and set default to fall (Customisable in private servers"
-                "Added private server API keys & remote access"
-                "New police stage 3 ELS pattern"
-                "Upgraded graphics & optimisation for lower-end devices"
-                "Fixed DOT mechanics on trucks"
-                "Fixed Fire ELS"
-                "Fixed auto shop bug where civilian and police vehicles were being mixed up"
-                "Anti-exploit/cheat has been upgraded as some false bans were given out"
-                "Added new police lightbars"
-                "DMV record changing fixed"
-                "Custom street light colors in private servers"
-                "Changeable licence plates in private servers (UK, US, Custom & More)"
+                "New police liveries",
+                "Added seasons to the game and set default to fall (Customisable in private servers",
+                "Added private server API keys & remote access",
+                "New police stage 3 ELS pattern",
+                "Upgraded graphics & optimisation for lower-end devices",
+                "Fixed DOT mechanics on trucks",
+                "Fixed Fire ELS",
+                "Fixed auto shop bug where civilian and police vehicles were being mixed up",
+                "Anti-exploit/cheat has been upgraded as some false bans were given out",
+                "Added new police lightbars",
+                "DMV record changing fixed",
+                "Custom street light colors in private servers",
+                "Changeable licence plates in private servers (UK, US, Custom & More)",
                 "Added 2020 Audi RS6 Avant C8 & 2021 Dodge Durango onto police team"
             ]
         },
