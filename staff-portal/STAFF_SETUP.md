@@ -82,3 +82,5 @@ The Moderation page refreshes itself every 8 seconds. While a profile is open th
 
 Anti-cheat auto-bans: if the game reports the same player several times, only the first within 15 minutes is logged, reviewed and sent to Discord.
 Bans use Roblox's own ban system, so they work in every server and for offline players.
+
+Anti-cheat detail: every flag now carries the situation the game recorded (team, ping, position, humanoid state, vehicle numbers and so on). It appears in the ban's notes on the Moderation page, in the Discord alert, and is given to the AI review, which now follows a stricter checklist and returns the key evidence and what it is unsure about. "Vehicle Speed Exploit" flags a driver averaging more than 10 mph above that vehicle's own top speed; it only flags by default (set `VEHICLE_SPEED_CAN_BAN = true` in the game's Adminhandler to let repeats ban).

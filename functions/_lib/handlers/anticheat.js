@@ -34,13 +34,51 @@ function discordEmbed(report, result) {
           { name: "AI verdict", value: `${result.verdict} (${Math.round(result.confidence * 100)}%)`, inline: true },
           { name: "Recommended", value: result.recommendedAction, inline: true },
           { name: "Reason", value: result.reason.slice(0, 1000) || "-", inline: false },
-          { name: "Details", value: report.details.slice(0, 500) || "-", inline: false }
+          ...(result.evidence?.length ? [{ name: "Evidence", value: result.evidence.map((e) => "• " + e).join("\n").slice(0, 1000), inline: false }] : []),
+          ...(result.uncertainty ? [{ name: "What is uncertain", value: result.uncertainty.slice(0, 500), inline: false }] : []),
+          { name: "Details", value: report.details.slice(0, 1000) || "-", inline: false },
+          ...(Object.keys(report.context || {}).length ? [{ name: "Situation", value: contextLine(report.context).slice(0, 1000), inline: false }] : [])
         ],
         footer: { text: "AI second opinion - staff make the final call" },
         timestamp: new Date().toISOString()
       }
     ]
   };
+}
+
+// Extra facts the game sends about the situation: a flat object of strings / numbers / booleans.
+function cleanContext(raw) {
+  const out = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  let n = 0;
+  for (const [k, v] of Object.entries(raw)) {
+    if (n >= 40) break;
+    if (typeof v === "string") out[clean(k, 40)] = clean(v, 120);
+    else if (typeof v === "number" && Number.isFinite(v)) out[clean(k, 40)] = v;
+    else if (typeof v === "boolean") out[clean(k, 40)] = v;
+    else continue;
+    n++;
+  }
+  return out;
+}
+const contextLine = (c) => Object.entries(c).map(([k, v]) => `${k}: ${v}`).join(" | ");
+
+// Facts worked out here (not by the model) so the review does not have to do arithmetic.
+function deriveFacts(report) {
+  const f = [];
+  const c = report.context;
+  if (report.violationType === "Vehicle Speed Exploit" && Number.isFinite(c.averageMph) && Number.isFinite(c.vehicleTopSpeedMph) && c.vehicleTopSpeedMph > 0) {
+    f.push(`Average ${c.averageMph} mph vs this vehicle's top speed ${c.vehicleTopSpeedMph} mph = ${Math.round(((c.averageMph - c.vehicleTopSpeedMph) / c.vehicleTopSpeedMph) * 100)}% above top speed (${c.averageMph - c.vehicleTopSpeedMph} mph over).`);
+    if (Number.isFinite(c.peakMph)) f.push(`Peak ${c.peakMph} mph (${c.peakMph - c.vehicleTopSpeedMph} mph over top speed).`);
+    f.push("The allowed limit is the vehicle's top speed + 10 mph, averaged over about 1.5 seconds, driver only, with falls/launches (large vertical speed) ignored.");
+  }
+  if (Number.isFinite(c.pingMs)) f.push(c.pingMs >= 250 ? `High latency (${c.pingMs} ms): lag can distort movement checks.` : `Ping ${c.pingMs} ms (normal).`);
+  if (report.recentFlags.length) {
+    const types = [...new Set(report.recentFlags.map((x) => x.type))];
+    f.push(`${report.recentFlags.length} earlier flag(s) from this player this session, types: ${types.join(", ")}; the newest was ${Math.min(...report.recentFlags.map((x) => x.secondsAgo))}s ago.`);
+  } else f.push("No earlier flags from this player this session.");
+  f.push(report.player.accountAgeDays < 30 ? `Account is new (${report.player.accountAgeDays} days old).` : `Account is ${report.player.accountAgeDays} days old.`);
+  return f;
 }
 
 // Anti-cheat bans also appear on the staff website (Moderation page) with the AI's second opinion.
@@ -51,16 +89,17 @@ function logAutoBan(context, report, result, rowId) {
   const now = nowSec();
   context.waitUntil(
     (async () => {
+      const fullReason = result.reviewed === false ? "" : [result.reason, result.evidence?.length ? "Evidence: " + result.evidence.join("; ") : "", result.uncertainty ? "Uncertain: " + result.uncertainty : ""].filter(Boolean).join("\n").slice(0, 1500);
       if (rowId) {
         await DB.prepare("UPDATE mod_actions SET ai_verdict = ?1, ai_reason = ?2 WHERE id = ?3")
-          .bind(result.reviewed === false ? "" : result.verdict, result.reviewed === false ? "" : result.reason, rowId).run();
+          .bind(result.reviewed === false ? "" : result.verdict, fullReason, rowId).run();
         return;
       }
       await rememberName(DB, report.player.userId, report.player.username, now);
       await recordAction(DB, {
         userId: report.player.userId, username: report.player.username, type: "ban", reason: report.violationType,
-        notes: report.details, source: "auto", byName: "Anti-cheat",
-        aiVerdict: result.reviewed === false ? "" : result.verdict, aiReason: result.reviewed === false ? "" : result.reason
+        notes: [report.details, Object.keys(report.context).length ? "Context: " + contextLine(report.context) : ""].filter(Boolean).join("\n").slice(0, 1500), source: "auto", byName: "Anti-cheat",
+        aiVerdict: result.reviewed === false ? "" : result.verdict, aiReason: fullReason
       }, now);
     })().catch(() => {})
   );
@@ -85,6 +124,7 @@ export async function handle(context) {
   }
 
   let autoBanRowId = null;
+  const ctxFacts = cleanContext(body.context);
   // The game can report the same auto-ban several times (one per flag, per server, or on rejoin).
   // If this player's latest record is already an auto-ban from the last 15 minutes, don't log,
   // review or ping staff again.
@@ -103,7 +143,7 @@ export async function handle(context) {
              SELECT 1 FROM mod_actions WHERE user_id = ?1 AND type = 'ban' AND source = 'auto' AND created_at > ?6
                AND id = (SELECT MAX(id) FROM mod_actions WHERE user_id = ?1)
            ) RETURNING id`
-        ).bind(userId, uname, clean(body.violationType, 60), clean(body.details, 500), at, at - 900).first();
+        ).bind(userId, uname, clean(body.violationType, 60), [clean(body.details, 1000), Object.keys(ctxFacts).length ? "Context: " + contextLine(ctxFacts) : ""].filter(Boolean).join("\n").slice(0, 1500), at, at - 900).first();
         if (!row) return json({ success: true, duplicate: true, reviewed: false });
         autoBanRowId = row.id;
       } catch {}
@@ -117,16 +157,18 @@ export async function handle(context) {
       accountAgeDays: Math.max(0, Math.floor(Number(body.player?.accountAgeDays) || 0))
     },
     violationType,
-    details: clean(body.details, 500),
+    details: clean(body.details, 1000),
+    context: ctxFacts,
     outcome: body.outcome === "auto_ban" ? "auto_ban" : "warning",
     recentFlags: (Array.isArray(body.recentFlags) ? body.recentFlags : []).slice(0, 10).map((f) => ({
       type: clean(f?.type, 60),
-      details: clean(f?.details, 200),
+      details: clean(f?.details, 300),
       secondsAgo: Math.max(0, Math.floor(Number(f?.secondsAgo) || 0))
     })),
     serverId: clean(body.serverId, 64),
     placeId: Number(body.placeId) || null
   };
+  report.derivedFacts = deriveFacts(report);
 
   const reviewId = crypto.randomUUID();
   const finish = (result, extra = {}) => {
@@ -159,7 +201,9 @@ export async function handle(context) {
     confidence,
     severity: pick(v.severity, SEVERITIES, "low"),
     recommendedAction,
-    reason: clean(v.reason, 400),
+    reason: clean(v.reason, 700),
+    evidence: (Array.isArray(v.evidence) ? v.evidence : []).slice(0, 6).map((e) => clean(e, 200)).filter(Boolean),
+    uncertainty: clean(v.uncertainty, 300),
     model: ai.model
   };
 
