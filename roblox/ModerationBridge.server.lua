@@ -189,6 +189,13 @@ end)
 
 -- ---------------------------------------------------------------- messages shown on screen
 local function showMessage(player, title, text)
+	-- Prefer the game's own notification system (always visible, matches the rest of the UI)
+	local framework = lazy(function() return require(RS:WaitForChild("framework")) end)
+	if framework and framework.notificationEvent then
+		local ok = pcall(framework.notificationEvent, player, "client", title, text, 12, Color3.fromRGB(255, 190, 40))
+		if ok then return end
+	end
+	-- fallback: a simple banner
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "WestbrookModMessage"
 	gui.ResetOnSpawn = false
