@@ -44,15 +44,40 @@ export async function handle(context) {
       const dur = Math.min(MAX_BAN_SECONDS * 20, Math.max(0, Math.trunc(Number(body.durationSeconds)) || 0));
       await rememberName(DB, userId, username, now);
       // An anti-cheat ban that was already recorded through the review endpoint in the last minute is not logged twice.
-      if (type === "ban" && (!by || by === "auto")) {
+      const auto = !by || by === "auto" || /anti-?cheat|automatic/i.test(by);
+      if (type === "ban" && auto) {
         const dup = await DB.prepare("SELECT id FROM mod_actions WHERE user_id = ?1 AND type = 'ban' AND source = 'auto' AND created_at > ?2").bind(userId, now - 60).first();
         if (dup) return json({ success: true, duplicate: true });
       }
       const id = await recordAction(DB, {
         userId, username, type, reason: clean(body.reason, 300), notes: clean(body.details, 300),
-        source: !by || by === "auto" ? "auto" : "game", byName: by && by !== "auto" ? by : "Anti-cheat", durationSecs: dur
+        source: auto ? "auto" : "game", byName: auto ? "Anti-cheat" : by, durationSecs: dur
       }, now);
       return json({ success: true, id });
+    }
+
+    case "syncBans": {
+      // bans that already exist in the game's ban list: add the ones the website does not know about yet
+      const bans = (Array.isArray(body.bans) ? body.bans : []).slice(0, 150);
+      let added = 0;
+      for (const b of bans) {
+        const userId = Math.trunc(Number(b?.userId));
+        if (!(userId > 0)) continue;
+        const ts = Math.trunc(Number(b.timestamp)) || now;
+        const expires = Math.trunc(Number(b.expires)) || null;
+        if (expires && expires <= now) continue;
+        const known = await DB.prepare("SELECT id FROM mod_actions WHERE user_id = ?1 AND type = 'ban' AND active = 1").bind(userId).first();
+        if (known) continue;
+        const username = clean(b.username, 40);
+        await rememberName(DB, userId, username, now);
+        const id = await recordAction(DB, {
+          userId, username, type: "ban", reason: clean(b.reason, 300), source: "game", byName: clean(b.by, 40) || "Game",
+          durationSecs: expires ? expires - ts : 0
+        }, ts);
+        if (expires) await DB.prepare("UPDATE mod_actions SET expires_at = ?1 WHERE id = ?2").bind(expires, id).run();
+        added++;
+      }
+      return json({ success: true, added });
     }
 
     case "poll": {

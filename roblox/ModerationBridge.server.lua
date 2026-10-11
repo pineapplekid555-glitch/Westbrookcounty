@@ -1,102 +1,108 @@
 --[[
-	Westbrook County - Moderation Bridge          (a normal Script in ServerScriptService)
+	ModerationBridge  (a Script in ServerScriptService)  - connects the game to the staff website's Moderation page.
 
-	What it does
-	  1. Sends each player's profile (money, XP, vehicles, gamepasses, join dates ...) to the staff website.
+	  1. Sends each player's profile to the website: money, Police / Fire / DOT XP, owned vehicles,
+	     gamepasses, first + last joined, time played and more.
 	  2. Every 10 seconds picks up commands staff typed on the website (ban, unban, kick, warn, announce)
-	     and carries them out in the game.
-	  3. Reports bans the game made by itself, so they show up on the website too.
+	     and carries them out. Bans are written to the SAME ban list as your :ban command ("AdminBanList"),
+	     so everything stays in one place.
+	  3. Does nothing in Studio, so test sessions never take real staff commands.
 
-	Before you start
-	  - Game Settings > Security > turn on "Allow HTTP Requests".
-	  - You already have the two Roblox secrets from the livery / anti-cheat setup:
-	      westbrook_api_key   (= ROBLOX_API_KEY in Cloudflare)
-	  - Fill in the PRIVATE_PATH below (the same value as PRIVATE_API_PATH in Cloudflare).
-	  - Only the "YOUR GAME" part near the top needs editing.
-
-	Bans use Roblox's own ban system (Players:BanAsync), so they work across every server, even
-	for players who are offline, and Roblox kicks the player for you.
+	It uses WestbrookAPI (same secrets as the livery + anti-cheat) and your existing systems.
+	Bans made in-game with :ban / :unban are reported by Adminhandler, anti-cheat bans by WestbrookAPI.
 ]]
 
 local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
+local RS = game:GetService("ReplicatedStorage")
+local SSS = game:GetService("ServerScriptService")
 local DataStoreService = game:GetService("DataStoreService")
 local MessagingService = game:GetService("MessagingService")
-local MarketplaceService = game:GetService("MarketplaceService")
 local RunService = game:GetService("RunService")
 
-----------------------------------------------------------------------
--- YOUR GAME  (edit this part)
-----------------------------------------------------------------------
-local CONFIG = {
-	-- The secret part of the web address (the same text as PRIVATE_API_PATH in Cloudflare).
-	-- If you have not set PRIVATE_API_PATH in Cloudflare, leave this empty.
-	PRIVATE_PATH = "",
+if RunService:IsStudio() then
+	print("[ModerationBridge] Studio: switched off here so test sessions don't take real staff commands.")
+	return
+end
 
-	-- Gamepasses to show on a player's profile: { id = 123456, name = "Early Access" }
-	GAMEPASSES = {
-		-- { id = 0, name = "Early Access" },
-	},
+local WestbrookAPI = require(SSS:WaitForChild("WestbrookAPI"))
+local GameStaffConfig = require(RS:WaitForChild("GameStaffConfig"))
 
-	-- Return what you know about a player. Anything you leave out is simply not shown.
-	-- Example for a game that keeps money in leaderstats and XP in attributes:
-	--   money = player.leaderstats.Cash.Value,
-	--   xp = { police = player:GetAttribute("PoliceXP"), fire = player:GetAttribute("FireXP"), dot = player:GetAttribute("DOTXP") },
-	--   vehicles = { "Ford Explorer", "Chevy Tahoe" },
-	--   extra = { ["Helicopter Calls"] = 0, ["Early Access"] = "Yes" },   -- anything else you want staff to see
-	getGameData = function(player)
-		local data = {}
-		local stats = player:FindFirstChild("leaderstats")
-		if stats then
-			local cash = stats:FindFirstChild("Cash") or stats:FindFirstChild("Money")
-			if cash then data.money = cash.Value end
-		end
-		return data
-	end,
-}
-----------------------------------------------------------------------
--- Nothing below needs editing
-----------------------------------------------------------------------
-
-local BASE = "https://westbrookcounty.co.uk/api/"
-local URL = CONFIG.PRIVATE_PATH ~= "" and (BASE .. "p/moderation/" .. CONFIG.PRIVATE_PATH) or (BASE .. "moderation/game")
+local PATH = "/moderation/game"
 local TOPIC = "WestbrookModeration"
 local seenStore = DataStoreService:GetDataStore("WestbrookModSeen")
+local banStore = DataStoreService:GetDataStore("AdminBanList") -- the same list Adminhandler uses
+local BAN_INDEX_KEY = "BanIndex"
 local joinedAt = {}
 
 local function call(body)
-	local ok, res = pcall(function()
-		return HttpService:RequestAsync({
-			Url = URL,
-			Method = "POST",
-			Headers = {
-				["Content-Type"] = "application/json",
-				["Authorization"] = HttpService:GetSecret("westbrook_api_key"):AddPrefix("Bearer "),
-			},
-			Body = HttpService:JSONEncode(body),
-		})
-	end)
-	if not ok then
-		warn("[ModerationBridge] request failed:", res)
-		return nil
+	local data, err = WestbrookAPI.post(PATH, body)
+	if not data then
+		warn("[ModerationBridge] " .. tostring(body.action) .. " failed: " .. tostring(err))
 	end
-	if not res.Success then
-		warn("[ModerationBridge] website said", res.StatusCode, res.Body)
-		return nil
-	end
-	local decoded
-	pcall(function() decoded = HttpService:JSONDecode(res.Body) end)
-	return decoded
+	return data
 end
 
--- ---------------------------------------------------------------- profile
-local function gamepassList(player)
-	local owned = {}
-	for _, pass in ipairs(CONFIG.GAMEPASSES) do
-		local ok, has = pcall(function() return MarketplaceService:UserOwnsGamePassAsync(player.UserId, pass.id) end)
-		if ok and has then table.insert(owned, pass.name) end
+local function lazy(getter)
+	local ok, result = pcall(getter)
+	return ok and result or nil
+end
+
+-- ---------------------------------------------------------------- what the website shows about a player
+local POOLS = { police = "PoliceSheriff", fire = "Fire", dot = "DOT" }
+
+local function collect(player)
+	local data = { extra = {} }
+
+	-- money: Wallet + Bank (leaderstats)
+	local stats = player:FindFirstChild("leaderstats") or player:FindFirstChild("Leaderstats")
+	local wallet = stats and stats:FindFirstChild("Wallet")
+	local bank = stats and stats:FindFirstChild("Bank")
+	if wallet or bank then
+		data.money = (wallet and wallet.Value or 0) + (bank and bank.Value or 0)
+		data.extra["Wallet"] = wallet and ("$" .. wallet.Value) or nil
+		data.extra["Bank"] = bank and ("$" .. bank.Value) or nil
 	end
-	return owned
+
+	-- XP and rank per department
+	local RankXP = lazy(function() return require(RS.framework.Systems["Rank & XP System"].Core.Server) end)
+	if RankXP then
+		data.xp = {}
+		local ranks = {}
+		for key, pool in pairs(POOLS) do
+			local okXp, xp = pcall(RankXP.getPlayerPoolXP, player, pool)
+			data.xp[key] = okXp and xp or 0
+			local okRank, rank = pcall(RankXP.getPlayerRank, player, pool)
+			if okRank and rank and (data.xp[key] or 0) > 0 then
+				ranks[key == "police" and "Police" or key == "fire" and "Fire" or "DOT"] = rank
+			end
+		end
+		if next(ranks) then data.extra["Department ranks"] = ranks end
+	end
+
+	-- owned vehicles
+	local VS = lazy(function() return require(RS.framework.Systems["Vehicle Spawner"].Core.Server) end)
+	if VS and VS.getOwnedVehicleNames then
+		local ok, names = pcall(VS.getOwnedVehicleNames, player)
+		if ok then data.vehicles = names end
+	end
+
+	-- gamepasses (real or gifted) from PassConfig
+	local PassService = lazy(function() return require(SSS.PassService) end)
+	local PassConfig = lazy(function() return require(RS.PassConfig) end)
+	if PassService and PassConfig then
+		local owned = {}
+		for key, entry in pairs(PassConfig) do
+			if type(entry) == "table" and entry.gamepassId and entry.gamepassId ~= 0 then
+				local ok, has = pcall(PassService.Owns, player, key)
+				if ok and has then table.insert(owned, tostring(entry.name or entry.displayName or key)) end
+			end
+		end
+		table.sort(owned)
+		data.gamepasses = owned
+	end
+
+	if player.Team then data.extra["Team right now"] = player.Team.Name end
+	return data
 end
 
 local function sendProfile(player, leaving)
@@ -113,8 +119,8 @@ local function sendProfile(player, leaving)
 			return old
 		end)
 	end)
-	local ok, data = pcall(CONFIG.getGameData, player)
-	if not ok or type(data) ~= "table" then data = {} end
+	local ok, data = pcall(collect, player)
+	if not ok then data = {} end
 	call({
 		action = "profile",
 		player = {
@@ -124,7 +130,7 @@ local function sendProfile(player, leaving)
 			money = data.money,
 			xp = data.xp,
 			vehicles = data.vehicles,
-			gamepasses = gamepassList(player),
+			gamepasses = data.gamepasses,
 			firstJoined = first,
 			lastJoined = now,
 			accountCreated = now - player.AccountAge * 86400,
@@ -136,24 +142,49 @@ end
 
 Players.PlayerAdded:Connect(function(player)
 	joinedAt[player] = os.time()
-	task.spawn(sendProfile, player, false)
+	task.delay(20, function() -- give XP / vehicles time to load first
+		if player.Parent then sendProfile(player, false) end
+	end)
 end)
 Players.PlayerRemoving:Connect(function(player)
-	sendProfile(player, true)
-	joinedAt[player] = nil
+	task.spawn(function()
+		sendProfile(player, true)
+		joinedAt[player] = nil
+	end)
 end)
 for _, player in ipairs(Players:GetPlayers()) do
 	joinedAt[player] = os.time()
-	task.spawn(sendProfile, player, false)
+	task.delay(20, function() if player.Parent then sendProfile(player, false) end end)
 end
 task.spawn(function() -- keep money and XP fresh while people play
 	while true do
 		task.wait(300)
 		for _, player in ipairs(Players:GetPlayers()) do
 			sendProfile(player, false)
-			task.wait(1)
+			task.wait(2)
 		end
 	end
+end)
+
+-- Tell the website about bans that already existed before this script, so Look up shows them.
+task.delay(45, function()
+	local ok, index = pcall(function() return banStore:GetAsync(BAN_INDEX_KEY) end)
+	if not ok or type(index) ~= "table" then return end
+	local batch = {}
+	local function flush()
+		if #batch > 0 then call({ action = "syncBans", bans = batch }) end
+		batch = {}
+	end
+	for key, entry in pairs(index) do
+		if type(entry) == "table" and tonumber(key) then
+			table.insert(batch, {
+				userId = tonumber(key), username = entry.username, reason = entry.reason,
+				by = entry.bannedBy, timestamp = entry.timestamp, expires = entry.expires,
+			})
+			if #batch >= 100 then flush() task.wait(1) end
+		end
+	end
+	flush()
 end)
 
 -- ---------------------------------------------------------------- messages shown on screen
@@ -213,29 +244,45 @@ pcall(function()
 	MessagingService:SubscribeAsync(TOPIC, function(message) runLocal(message.Data) end)
 end)
 
-local function broadcast(cmd)
-	local msg = { type = cmd.type, userId = cmd.userId, reason = string.sub(cmd.reason or "", 1, 300) }
+local function broadcast(type_, userId, reason)
+	local msg = { type = type_, userId = userId, reason = string.sub(reason or "", 1, 300) }
 	runLocal(msg)
 	pcall(function() MessagingService:PublishAsync(TOPIC, msg) end)
 end
 
 -- ---------------------------------------------------------------- carry out website commands
 local function execute(cmd)
+	if (cmd.type == "ban" or cmd.type == "kick") and GameStaffConfig.IsGameStaff(cmd.userId) then
+		error("that player is game staff and is protected")
+	end
 	if cmd.type == "ban" then
-		Players:BanAsync({
-			UserIds = { cmd.userId },
-			Duration = (cmd.durationSeconds and cmd.durationSeconds > 0) and cmd.durationSeconds or -1,
-			DisplayReason = cmd.reason,
-			PrivateReason = "Banned by " .. tostring(cmd.by) .. " from the staff website",
-			ExcludeAltAccounts = false,
-			ApplyToUniverse = true,
-		})
+		local now = os.time()
+		local expires = (cmd.durationSeconds and cmd.durationSeconds > 0) and (now + cmd.durationSeconds) or nil
+		local key = tostring(cmd.userId)
+		banStore:UpdateAsync(BAN_INDEX_KEY, function(old)
+			old = old or {}
+			old[key] = {
+				reason = cmd.reason,
+				date = os.date("%Y-%m-%d %H:%M"),
+				timestamp = now,
+				bannedBy = tostring(cmd.by) .. " (website)",
+				username = cmd.username ~= "" and cmd.username or nil,
+				expires = expires, -- Adminhandler lifts the ban after this time
+			}
+			return old
+		end)
+		broadcast("kick", cmd.userId, "You are banned from this game.\nReason: " .. tostring(cmd.reason))
 		return "banned"
 	elseif cmd.type == "unban" then
-		Players:UnbanAsync({ UserIds = { cmd.userId }, ApplyToUniverse = true })
+		local key = tostring(cmd.userId)
+		banStore:UpdateAsync(BAN_INDEX_KEY, function(old)
+			old = old or {}
+			old[key] = nil
+			return old
+		end)
 		return "unbanned"
 	else
-		broadcast(cmd)
+		broadcast(cmd.type, cmd.userId, cmd.reason)
 		return "sent to all servers"
 	end
 end
@@ -249,13 +296,11 @@ local function poll()
 	end
 end
 
-if not RunService:IsStudio() then
-	task.spawn(function()
-		while true do
-			poll()
-			task.wait(10)
-		end
-	end)
-else
-	print("[ModerationBridge] Studio detected: polling for staff commands is switched off here.")
-end
+task.spawn(function()
+	while true do
+		poll()
+		task.wait(10)
+	end
+end)
+
+print("[ModerationBridge] running")
