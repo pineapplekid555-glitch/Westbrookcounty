@@ -140,7 +140,6 @@ window.WESTBROOK_CONTENT = {
                 "Custom street light colors in private servers"
                 "Changeable licence plates in private servers (UK, US, Custom & More)"
                 "Added 2020 Audi RS6 Avant C8 & 2021 Dodge Durango onto police team"
-                ""
             ]
         },
 
