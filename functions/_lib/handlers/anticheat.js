@@ -44,13 +44,18 @@ function discordEmbed(report, result) {
 }
 
 // Anti-cheat bans also appear on the staff website (Moderation page) with the AI's second opinion.
-function logAutoBan(context, report, result) {
+function logAutoBan(context, report, result, rowId) {
   if (report.outcome !== "auto_ban") return;
   const DB = getDB(context.env);
   if (!DB) return;
   const now = nowSec();
   context.waitUntil(
     (async () => {
+      if (rowId) {
+        await DB.prepare("UPDATE mod_actions SET ai_verdict = ?1, ai_reason = ?2 WHERE id = ?3")
+          .bind(result.reviewed === false ? "" : result.verdict, result.reviewed === false ? "" : result.reason, rowId).run();
+        return;
+      }
       await rememberName(DB, report.player.userId, report.player.username, now);
       await recordAction(DB, {
         userId: report.player.userId, username: report.player.username, type: "ban", reason: report.violationType,
@@ -79,6 +84,32 @@ export async function handle(context) {
     return json({ success: false, error: "player.userId and violationType are required." }, 400);
   }
 
+  let autoBanRowId = null;
+  // The game can report the same auto-ban several times (one per flag, per server, or on rejoin).
+  // If this player's latest record is already an auto-ban from the last 15 minutes, don't log,
+  // review or ping staff again.
+  if (body.outcome === "auto_ban") {
+    const DB = getDB(context.env);
+    if (DB) {
+      try {
+        // one atomic statement: insert only if this player's latest record is not already a recent auto-ban
+        const at = nowSec();
+        const uname = clean(body.player?.username, 50);
+        await rememberName(DB, userId, uname, at);
+        const row = await DB.prepare(
+          `INSERT INTO mod_actions (user_id, username, type, reason, notes, source, by_name, active, created_at)
+           SELECT ?1, ?2, 'ban', ?3, ?4, 'auto', 'Anti-cheat', 1, ?5
+           WHERE NOT EXISTS (
+             SELECT 1 FROM mod_actions WHERE user_id = ?1 AND type = 'ban' AND source = 'auto' AND created_at > ?6
+               AND id = (SELECT MAX(id) FROM mod_actions WHERE user_id = ?1)
+           ) RETURNING id`
+        ).bind(userId, uname, clean(body.violationType, 60), clean(body.details, 500), at, at - 900).first();
+        if (!row) return json({ success: true, duplicate: true, reviewed: false });
+        autoBanRowId = row.id;
+      } catch {}
+    }
+  }
+
   const report = {
     player: {
       userId,
@@ -99,7 +130,7 @@ export async function handle(context) {
 
   const reviewId = crypto.randomUUID();
   const finish = (result, extra = {}) => {
-    logAutoBan(context, report, result);
+    logAutoBan(context, report, result, autoBanRowId);
     storeResult(context, "anticheat", reviewId, { reviewId, report, result, ...extra, at: new Date().toISOString() });
     return json({ success: true, reviewId, ...result, ...extra });
   };

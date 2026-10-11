@@ -303,6 +303,23 @@ local function editOnline(player, cmd)
 		end
 		assert(left < cmd.amount, "the player has no money")
 		return "removed $" .. (cmd.amount - left)
+	elseif cmd.type == "givexp" then
+		local RankXP = require(RS.framework.Systems["Rank & XP System"].Core.Server)
+		local pool = POOLS[cmd.pool]
+		assert(pool, "unknown department")
+		RankXP.addXP(player, pool, cmd.amount, "Added by staff")
+		return "gave " .. cmd.amount .. " XP"
+	elseif cmd.type == "givemoney" then
+		local stats = player:FindFirstChild("leaderstats") or player:FindFirstChild("Leaderstats")
+		local v = stats and (stats:FindFirstChild("Bank") or stats:FindFirstChild("Wallet"))
+		assert(v, "no money value found on the player")
+		v.Value += cmd.amount
+		return "gave $" .. cmd.amount
+	elseif cmd.type == "givevehicle" then
+		local VS = require(RS.framework.Systems["Vehicle Spawner"].Core.Server)
+		assert(VS.giveOwnedVehicle, "Vehicle Spawner is missing giveOwnedVehicle")
+		assert(VS.giveOwnedVehicle(player, cmd.vehicle), "the player already owns that vehicle")
+		return "gave " .. cmd.vehicle
 	elseif cmd.type == "removevehicle" then
 		local VS = require(RS.framework.Systems["Vehicle Spawner"].Core.Server)
 		assert(VS.removeOwnedVehicle, "Vehicle Spawner is missing removeOwnedVehicle")
@@ -349,6 +366,41 @@ local function editOffline(cmd)
 		end)
 		assert(left < cmd.amount, "the player has no money")
 		return "removed $" .. (cmd.amount - left) .. " (offline)"
+	elseif cmd.type == "givexp" then
+		local store = storeFor(RS.framework.Systems["Rank & XP System"].Config, "datastoreKey")
+		local pool = POOLS[cmd.pool]
+		assert(pool, "unknown department")
+		store:UpdateAsync(key, function(old)
+			if type(old) ~= "table" then old = {} end
+			old[pool] = (tonumber(old[pool]) or 0) + cmd.amount
+			return old
+		end)
+		return "gave " .. cmd.amount .. " XP (offline)"
+	elseif cmd.type == "givemoney" then
+		local store = DataStoreService:GetDataStore("PlayerEconomyData")
+		local done = false
+		store:UpdateAsync(key, function(old)
+			done = false
+			if type(old) ~= "table" then return nil end -- no record: the game would reset it to starting money
+			old.bank = (tonumber(old.bank) or 0) + cmd.amount
+			done = true
+			return old
+		end)
+		assert(done, "that player has no saved money yet; try again when they are online")
+		return "gave $" .. cmd.amount .. " (offline)"
+	elseif cmd.type == "givevehicle" then
+		local store = storeFor(RS.framework.Systems["Vehicle Spawner"].Config, "datastoreVehicleKey")
+		local given = false
+		store:UpdateAsync(key, function(old)
+			given = false
+			if type(old) ~= "table" then old = {} end
+			if old[cmd.vehicle] then return nil end
+			old[cmd.vehicle] = true
+			given = true
+			return old
+		end)
+		assert(given, "the player already owns that vehicle")
+		return "gave " .. cmd.vehicle .. " (offline)"
 	elseif cmd.type == "removevehicle" then
 		local store = storeFor(RS.framework.Systems["Vehicle Spawner"].Config, "datastoreVehicleKey")
 		local removed = false
@@ -368,6 +420,11 @@ end
 local function ack(cmd, ok, result)
 	call({ action = "ack", id = cmd.id, ok = ok, result = tostring(result) })
 end
+
+local EDITS = {
+	removexp = true, removemoney = true, removevehicle = true,
+	givexp = true, givemoney = true, givevehicle = true,
+}
 
 local function applyEdit(cmd)
 	local p = Players:GetPlayerByUserId(cmd.userId)
@@ -444,7 +501,7 @@ local function execute(cmd)
 			return old
 		end)
 		return "unbanned"
-	elseif cmd.type == "removexp" or cmd.type == "removemoney" or cmd.type == "removevehicle" then
+	elseif EDITS[cmd.type] then
 		return applyEdit(cmd)
 	else
 		broadcast(cmd.type, cmd.userId, cmd.reason)
@@ -452,19 +509,40 @@ local function execute(cmd)
 	end
 end
 
+local lastRefresh = {}
 local function poll()
 	local reply = call({ action = "poll" })
-	if not reply or not reply.commands then return end
-	for _, cmd in ipairs(reply.commands) do
+	if not reply then return 10 end
+	-- staff have this player's profile open: send fresh numbers now (at most every 5 seconds)
+	if type(reply.refresh) == "table" then
+		for _, id in ipairs(reply.refresh) do
+			local p = Players:GetPlayerByUserId(tonumber(id) or 0)
+			if p and os.time() - (lastRefresh[p] or 0) >= 5 then
+				lastRefresh[p] = os.time()
+				task.spawn(sendProfile, p, false)
+			end
+		end
+	end
+	for _, cmd in ipairs(reply.commands or {}) do
 		local ok, result = pcall(execute, cmd)
 		if not (ok and result == REMOTE) then ack(cmd, ok, result) end
 	end
+	return math.clamp(tonumber(reply.pollIn) or 10, 3, 60)
 end
+
+-- tell the website which vehicles exist so admins can pick one to give
+task.delay(30, function()
+	local VS = lazy(function() return require(RS.framework.Systems["Vehicle Spawner"].Core.Server) end)
+	if VS and VS.getAllVehicleNames then
+		local ok, names = pcall(VS.getAllVehicleNames)
+		if ok and type(names) == "table" then call({ action = "catalog", vehicles = names }) end
+	end
+end)
 
 task.spawn(function()
 	while true do
-		poll()
-		task.wait(10)
+		local ok, wait = pcall(poll)
+		task.wait(ok and wait or 10)
 	end
 end)
 

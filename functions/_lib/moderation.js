@@ -8,8 +8,8 @@
 import { clean } from "./common.js";
 import { LEVEL, nowSec } from "./staffAuth.js";
 
-export const ACTION_TYPES = ["ban", "unban", "kick", "warn", "announce", "removexp", "removemoney", "removevehicle"];
-export const EDIT_TYPES = ["removexp", "removemoney", "removevehicle"]; // admin only: take things away from a player
+export const ACTION_TYPES = ["ban", "unban", "kick", "warn", "announce", "removexp", "removemoney", "removevehicle", "givexp", "givemoney", "givevehicle"];
+export const EDIT_TYPES = ["removexp", "removemoney", "removevehicle", "givexp", "givemoney", "givevehicle"]; // admin only: take things from / give things to a player
 export const XP_POOLS = { police: "Police / Sheriff XP", fire: "Fire XP", dot: "DOT XP" };
 
 // Older databases were created without mod_queue.payload. Add it the first time it is needed (safe to run repeatedly).
@@ -23,7 +23,50 @@ export async function ensurePayloadColumn(DB) {
 export const MAX_BAN_SECONDS = 365 * 86400;
 export const CLAIM_TIMEOUT = 60; // a command a game server took but never confirmed is offered again after this
 export const SHORT_LIVED = 10 * 60; // kicks, warnings and announcements are dropped if nobody picked them up in time
-export const POLL_SECONDS = 10;
+export const POLL_FAST = 5;   // while a staff member has the Moderation page open
+export const POLL_IDLE = 20;  // otherwise (saves requests on the free plan)
+export const POLL_SECONDS = POLL_FAST;
+const STAFF_ACTIVE_WINDOW = 120;
+
+// A small key/value table for "is staff watching?", "which profile is open?" and the vehicle catalog.
+let stateChecked = false;
+export async function ensureStateTable(DB) {
+  if (stateChecked) return;
+  try { await DB.prepare("CREATE TABLE IF NOT EXISTS mod_state (k TEXT PRIMARY KEY, v TEXT NOT NULL DEFAULT '', at INTEGER NOT NULL DEFAULT 0)").run(); } catch { /* ignore */ }
+  stateChecked = true;
+}
+const lastTouch = new Map();
+// Remember that staff are looking (and optionally at which player) so the game polls faster and refreshes that profile.
+export async function touchStaff(DB, userId = null, now = nowSec()) {
+  try {
+    await ensureStateTable(DB);
+    const upsert = (k) => DB.prepare("INSERT INTO mod_state (k, at) VALUES (?1, ?2) ON CONFLICT(k) DO UPDATE SET at = excluded.at").bind(k, now).run();
+    if (!lastTouch.has("seen") || now - lastTouch.get("seen") >= 15) { lastTouch.set("seen", now); await upsert("staff_seen"); }
+    if (userId) await upsert("refresh:" + userId);
+  } catch { /* never block a page on this */ }
+}
+export async function pollInterval(DB, now = nowSec()) {
+  try {
+    await ensureStateTable(DB);
+    const r = await DB.prepare("SELECT at FROM mod_state WHERE k = 'staff_seen'").first();
+    return r && now - Number(r.at) < STAFF_ACTIVE_WINDOW ? POLL_FAST : POLL_IDLE;
+  } catch { return POLL_IDLE; }
+}
+export async function wantedRefreshes(DB, now = nowSec()) {
+  try {
+    await ensureStateTable(DB);
+    const rows = (await DB.prepare("SELECT k FROM mod_state WHERE k LIKE 'refresh:%' AND at > ?1 LIMIT 20").bind(now - 30).all()).results || [];
+    return rows.map((r) => Number(String(r.k).slice(8))).filter((n) => n > 0);
+  } catch { return []; }
+}
+export async function getCatalog(DB) {
+  try {
+    await ensureStateTable(DB);
+    const r = await DB.prepare("SELECT v FROM mod_state WHERE k = 'vehicle_catalog'").first();
+    const list = JSON.parse(r?.v || "[]");
+    return Array.isArray(list) ? list : [];
+  } catch { return []; }
+}
 
 // Who may ban / unban / kick / warn. Everyone on staff can look people up.
 export function actLevel(env) {

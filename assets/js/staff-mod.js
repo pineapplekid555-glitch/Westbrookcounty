@@ -3,7 +3,7 @@
 (function () {
     "use strict";
     var SP = window.SP, $ = SP.$, h = SP.h, clear = SP.clear, api = SP.api, busy = SP.busy, say = SP.say, when = SP.when;
-    var me = null, canAct = false;
+    var me = null, canAct = false, catalog = [], curTab = "look", curProfile = null, REFRESH_MS = 8000;
 
     SP.onUnauthorized = function () { if (me) { me = null; $("sp-app").hidden = true; $("sp-login").hidden = false; say("Your session ended. Please log in again.", "err"); } };
     function fail(e) { say(e.message, "err"); }
@@ -36,6 +36,7 @@
     var TABS = ["look", "auto", "bans", "act", "log"];
     function openTab(n) {
         Array.prototype.forEach.call(document.querySelectorAll(".sp-tabs button"), function (b) { b.setAttribute("aria-selected", b.getAttribute("data-tab") === n ? "true" : "false"); });
+        curTab = n;
         TABS.forEach(function (t) { $("tab-" + t).hidden = t !== n; });
         ({ look: function () {}, auto: loadAuto, bans: loadBans, act: loadAct, log: loadLog })[n]();
     }
@@ -76,9 +77,19 @@
         return document.createTextNode(String(value));
     }
 
-    function openProfile(id) {
+    // true while someone is typing in the profile, so a refresh never wipes what they entered
+    function profileBusy() {
+        var box = $("profile"), a = document.activeElement;
+        if (a && box.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
+        return Array.prototype.some.call(box.querySelectorAll("input,textarea"), function (el) { return el.value !== ""; });
+    }
+    function openProfile(id, silent) {
+        if (silent && profileBusy()) return;
+        if (!silent) curProfile = String(id);
         api("/api/staff/mod/lookup?id=" + encodeURIComponent(id)).then(function (d) {
+            if (silent && (profileBusy() || curProfile !== String(id))) return;
             canAct = d.canAct;
+            catalog = Array.isArray(d.vehicleCatalog) ? d.vehicleCatalog : [];
             var p = d.player, box = clear($("profile")); box.hidden = false;
             var card = h("div", { class: "sp-card" });
             card.appendChild(h("h3", { text: (p.displayName || p.username || "Player " + p.userId) }));
@@ -146,25 +157,41 @@
                 busy(e.target, function () { return api("/api/staff/mod/action", { action: "note", user: String(p.userId), notes: noteBox.value }).then(function () { say("Note saved.", "good"); openProfile(p.userId); }); });
             } }));
             box.appendChild(hist);
-            box.scrollIntoView({ behavior: "smooth", block: "start" });
-        }).catch(fail);
+            if (!silent) box.scrollIntoView({ behavior: "smooth", block: "start" });
+        }).catch(silent ? function () {} : fail);
     }
 
-    // admin only: take XP, money or a vehicle away (the server checks this again)
+    // keep what is on screen fresh (every 8 seconds while the page is visible)
+    setInterval(function () {
+        if (!me || document.hidden) return;
+        if (curTab === "look" && curProfile) openProfile(curProfile, true);
+        else if (curTab === "auto") loadAuto(true);
+        else if (curTab === "bans") loadBans(true);
+        else if (curTab === "log") loadLog(true);
+    }, REFRESH_MS);
+
+    // admin only: change a player's XP, money or vehicles (the server checks this again)
     function removeCard(p) {
-        var card = h("div", { class: "sp-card" }, h("h3", { text: "Remove from player (admins only)" }),
-            h("div", { class: "sp-meta", text: "The game does it within about 10 seconds. Online players are updated live; offline players are changed in the saved data." }));
+        var card = h("div", { class: "sp-card" }, h("h3", { text: "Give or take XP, money and vehicles (admins only)" }),
+            h("div", { class: "sp-meta", text: "The game does it within about 5 to 10 seconds. Online players are updated live; offline players are changed in the saved data. Every change is saved in the history." }));
         var reason = h("input", { type: "text", maxlength: "300", placeholder: "Reason (required, saved in the history)", "aria-label": "Reason" });
         card.appendChild(h("label", { text: "Reason" })); card.appendChild(reason);
         function send(body, label, btn) {
             if (!confirm(label + " for " + (p.username || p.userId) + "?")) return;
             body.user = String(p.userId); body.reason = reason.value;
-            busy(btn, function () { return api("/api/staff/mod/action", body).then(function () { say("Sent. The game will do it within about 10 seconds.", "good"); reason.value = ""; }); });
+            busy(btn, function () { return api("/api/staff/mod/action", body).then(function () { say("Sent. The game will do it within about 5 to 10 seconds.", "good"); reason.value = ""; }); });
         }
         var pool = h("select", { "aria-label": "Department" }, h("option", { value: "police", text: "Police / Sheriff XP" }), h("option", { value: "fire", text: "Fire XP" }), h("option", { value: "dot", text: "DOT XP" }));
         var xp = h("input", { type: "number", min: "1", step: "1", placeholder: "Amount", "aria-label": "XP to remove" });
         card.appendChild(h("div", { class: "sp-inline", style: "margin-top:12px" }, pool, xp, h("button", { type: "button", class: "sp-btn bad sm", text: "Remove XP", onclick: function (e) {
             send({ action: "removexp", pool: pool.value, amount: xp.value }, "Remove " + xp.value + " " + pool.options[pool.selectedIndex].text, e.target); } })));
+        var gxp = h("input", { type: "number", min: "1", step: "1", placeholder: "Amount", "aria-label": "XP to give" });
+        var gpool = h("select", { "aria-label": "Department to give XP in" }, h("option", { value: "police", text: "Police / Sheriff XP" }), h("option", { value: "fire", text: "Fire XP" }), h("option", { value: "dot", text: "DOT XP" }));
+        card.appendChild(h("div", { class: "sp-inline", style: "margin-top:12px" }, gpool, gxp, h("button", { type: "button", class: "sp-btn sm", text: "Give XP", onclick: function (e) {
+            send({ action: "givexp", pool: gpool.value, amount: gxp.value }, "Give " + gxp.value + " " + gpool.options[gpool.selectedIndex].text, e.target); } })));
+        var gcash = h("input", { type: "number", min: "1", step: "1", placeholder: "Amount in $", "aria-label": "Money to give" });
+        card.appendChild(h("div", { class: "sp-inline", style: "margin-top:12px" }, gcash, h("button", { type: "button", class: "sp-btn sm", text: "Give money", onclick: function (e) {
+            send({ action: "givemoney", amount: gcash.value }, "Give $" + gcash.value, e.target); } })));
         var cash = h("input", { type: "number", min: "1", step: "1", placeholder: "Amount in $", "aria-label": "Money to remove" });
         card.appendChild(h("div", { class: "sp-inline", style: "margin-top:12px" }, cash, h("button", { type: "button", class: "sp-btn bad sm", text: "Remove money", onclick: function (e) {
             send({ action: "removemoney", amount: cash.value }, "Remove $" + cash.value, e.target); } })));
@@ -173,11 +200,19 @@
         if (p.vehicles.length) card.appendChild(h("div", { class: "sp-inline", style: "margin-top:12px" }, veh, h("button", { type: "button", class: "sp-btn bad sm", text: "Remove vehicle", onclick: function (e) {
             send({ action: "removevehicle", vehicle: veh.value }, "Remove the vehicle " + veh.value, e.target); } })));
         else card.appendChild(h("div", { class: "sp-meta", style: "margin-top:12px", text: "No vehicles recorded for this player." }));
+        var owned = {}; p.vehicles.forEach(function (v) { owned[v] = true; });
+        var avail = catalog.filter(function (v) { return !owned[v]; });
+        if (avail.length) {
+            var gveh = h("select", { "aria-label": "Vehicle to give" });
+            avail.forEach(function (v) { gveh.appendChild(h("option", { value: v, text: v })); });
+            card.appendChild(h("div", { class: "sp-inline", style: "margin-top:12px" }, gveh, h("button", { type: "button", class: "sp-btn sm", text: "Give vehicle", onclick: function (e) {
+                send({ action: "givevehicle", vehicle: gveh.value }, "Give the vehicle " + gveh.value, e.target); } })));
+        } else card.appendChild(h("div", { class: "sp-meta", style: "margin-top:12px", text: "The vehicle list has not arrived from the game yet (it is sent about 30 seconds after a server starts), so vehicles cannot be given right now." }));
         return card;
     }
 
     function actionItem(a, showName) {
-        var cls = a.type === "ban" ? (a.active ? "bad" : "warn") : a.type === "unban" ? "ok" : a.type.indexOf("remove") === 0 ? "warn" : "";
+        var cls = a.type === "ban" ? (a.active ? "bad" : "warn") : a.type === "unban" ? "ok" : a.type.indexOf("remove") === 0 ? "warn" : a.type.indexOf("give") === 0 ? "ok" : "";
         var title = h("div", null, h("span", { class: "sp-pill " + cls, text: a.type }), " ",
             h("strong", { text: (showName ? (a.username || a.userId) + " · " : "") + (a.type === "ban" ? length(a) : "") }),
             a.type === "ban" && a.active ? h("span", { class: "sp-pill bad", text: " active" }) : null);
@@ -190,7 +225,7 @@
     }
 
     // ---- anti-cheat bans and banned list
-    function loadAuto() {
+    function loadAuto(quiet) {
         api("/api/staff/mod/feed?view=auto").then(function (d) {
             canAct = d.canAct;
             var box = clear($("auto-list"));
@@ -204,9 +239,9 @@
                 item.appendChild(row);
                 box.appendChild(item);
             });
-        }).catch(fail);
+        }).catch(quiet === true ? function () {} : fail);
     }
-    function loadBans() {
+    function loadBans(quiet) {
         api("/api/staff/mod/feed?view=bans").then(function (d) {
             canAct = d.canAct;
             var box = clear($("bans-list"));
@@ -218,7 +253,7 @@
                 item.appendChild(row);
                 box.appendChild(item);
             });
-        }).catch(fail);
+        }).catch(quiet === true ? function () {} : fail);
     }
 
     // ---- take action
@@ -267,7 +302,7 @@
     });
 
     // ---- activity
-    function loadLog() {
+    function loadLog(quiet) {
         api("/api/staff/mod/feed?view=queue").then(function (d) {
             var box = clear($("queue-list"));
             if (!d.queue.length) box.appendChild(empty("Nothing sent yet."));
@@ -284,7 +319,7 @@
             var box = clear($("actions-list"));
             if (!d.actions.length) box.appendChild(empty("No actions yet."));
             d.actions.forEach(function (a) { box.appendChild(actionItem(a, true)); });
-        }).catch(fail);
+        }).catch(quiet === true ? function () {} : fail);
     }
 
     $("sp-logout").addEventListener("click", function (e) {

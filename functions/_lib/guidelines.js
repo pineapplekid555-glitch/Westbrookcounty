@@ -104,6 +104,7 @@ export const ANTICHEAT_GUIDELINES = {
   ],
   commonFalsePositives: [
     "Lag spikes, rubber-banding, or a low-end device causing position jumps",
+    "Speed flags while the player is seated in a vehicle: cars legitimately travel far faster than walking speed, and a vehicle spawn, teleport or seat change can look like a speed jump. The check is meant for on-foot movement, so treat a speed ban with a vehicle involved as a likely false positive",
     "Vehicle physics: crashes, PIT manoeuvres, flipping, or being launched by a collision",
     "Being ejected from a seat, ragdolling, respawning, or using the map teleport",
     "Helicopters and boats moving much faster or higher than a person on foot",

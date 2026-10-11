@@ -3,7 +3,7 @@
 // Any staff member can look people up.
 import { requireStaff, nowSec, LEVEL } from "../../../_lib/staffAuth.js";
 import { json } from "../../../_lib/common.js";
-import { shapePlayer, shapeAction, isActiveBan, resolveRoblox, actLevel } from "../../../_lib/moderation.js";
+import { shapePlayer, shapeAction, isActiveBan, resolveRoblox, actLevel, touchStaff, getCatalog } from "../../../_lib/moderation.js";
 
 export async function onRequestGet(context) {
   const auth = await requireStaff(context, LEVEL.staff);
@@ -16,6 +16,7 @@ export async function onRequestGet(context) {
   if (id !== null) {
     if (!/^\d{1,15}$/.test(id)) return json({ success: false, error: "Bad user id." }, 400);
     const uid = Number(id);
+    await touchStaff(DB, uid, now);
     const row = await DB.prepare("SELECT * FROM mod_players WHERE user_id = ?1").bind(uid).first();
     const actions = (await DB.prepare("SELECT * FROM mod_actions WHERE user_id = ?1 ORDER BY id DESC LIMIT 200").bind(uid).all()).results || [];
     let player = row ? shapePlayer(row) : null;
@@ -31,10 +32,12 @@ export async function onRequestGet(context) {
       activeBan: actions.find((a) => isActiveBan(a, now)) ? shapeAction(actions.find((a) => isActiveBan(a, now)), now) : null,
       actions: actions.map((a) => shapeAction(a, now)),
       pending: pending.map((p) => ({ id: p.id, type: p.type, reason: p.reason, by: p.created_by_name, at: p.created_at, status: p.status })),
-      canAct: user.level >= actLevel(context.env)
+      canAct: user.level >= actLevel(context.env),
+      ...(user.level >= LEVEL.admin ? { vehicleCatalog: await getCatalog(DB) } : {})
     });
   }
 
+  await touchStaff(DB, null, now);
   const q = (url.searchParams.get("q") || "").trim().slice(0, 40);
   if (!q) return json({ success: true, results: [] });
   let rows;

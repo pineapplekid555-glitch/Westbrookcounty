@@ -1,7 +1,7 @@
 import { json, checkAuth, readJson, clean, HttpError } from "../common.js";
 import { getDB, nowSec } from "../staffAuth.js";
 import {
-  cleanProfile, savePlayer, rememberName, recordAction, ACTION_TYPES, EDIT_TYPES, ensurePayloadColumn, MAX_BAN_SECONDS, CLAIM_TIMEOUT, SHORT_LIVED, POLL_SECONDS
+  cleanProfile, savePlayer, rememberName, recordAction, ACTION_TYPES, EDIT_TYPES, ensurePayloadColumn, ensureStateTable, pollInterval, wantedRefreshes, MAX_BAN_SECONDS, CLAIM_TIMEOUT, SHORT_LIVED, POLL_SECONDS
 } from "../moderation.js";
 
 // POST /api/p/moderation/<PRIVATE_API_PATH>   (also /api/moderation/game while PRIVATE_API_PATH is unset)
@@ -23,17 +23,21 @@ const editFields = (payload) => {
 async function applyEditToProfile(DB, q) {
   const p = editFields(q.payload);
   const uid = q.user_id;
-  if (q.type === "removexp" && ["police", "fire", "dot"].includes(p.pool) && p.amount > 0) {
+  const give = q.type.startsWith("give");
+  if ((q.type === "removexp" || q.type === "givexp") && ["police", "fire", "dot"].includes(p.pool) && p.amount > 0) {
     const col = { police: "xp_police", fire: "xp_fire", dot: "xp_dot" }[p.pool];
-    await DB.prepare(`UPDATE mod_players SET ${col} = MAX(0, COALESCE(${col}, 0) - ?1) WHERE user_id = ?2`).bind(p.amount, uid).run();
-  } else if (q.type === "removemoney" && p.amount > 0) {
-    await DB.prepare("UPDATE mod_players SET money = MAX(0, COALESCE(money, 0) - ?1) WHERE user_id = ?2").bind(p.amount, uid).run();
-  } else if (q.type === "removevehicle" && p.vehicle) {
+    await DB.prepare(`UPDATE mod_players SET ${col} = MAX(0, COALESCE(${col}, 0) ${give ? "+" : "-"} ?1) WHERE user_id = ?2`).bind(p.amount, uid).run();
+  } else if ((q.type === "removemoney" || q.type === "givemoney") && p.amount > 0) {
+    await DB.prepare(`UPDATE mod_players SET money = MAX(0, COALESCE(money, 0) ${give ? "+" : "-"} ?1) WHERE user_id = ?2`).bind(p.amount, uid).run();
+  } else if ((q.type === "removevehicle" || q.type === "givevehicle") && p.vehicle) {
     const row = await DB.prepare("SELECT vehicles FROM mod_players WHERE user_id = ?1").bind(uid).first();
     if (row) {
       let list = [];
       try { list = JSON.parse(row.vehicles); } catch { /* ignore */ }
-      await DB.prepare("UPDATE mod_players SET vehicles = ?1 WHERE user_id = ?2").bind(JSON.stringify(list.filter((v) => v !== p.vehicle)), uid).run();
+      list = list.filter((v) => v !== p.vehicle);
+      if (give) list.push(p.vehicle);
+      list.sort();
+      await DB.prepare("UPDATE mod_players SET vehicles = ?1 WHERE user_id = ?2").bind(JSON.stringify(list), uid).run();
     }
   }
 }
@@ -106,6 +110,14 @@ export async function handle(context) {
       return json({ success: true, added });
     }
 
+    case "catalog": {
+      // every vehicle that exists in the game, so admins can pick one to give
+      const names = [...new Set((Array.isArray(body.vehicles) ? body.vehicles : []).filter((v) => typeof v === "string").slice(0, 500).map((v) => clean(v, 80)).filter(Boolean))].sort();
+      await ensureStateTable(DB);
+      await DB.prepare("INSERT INTO mod_state (k, v, at) VALUES ('vehicle_catalog', ?1, ?2) ON CONFLICT(k) DO UPDATE SET v = excluded.v, at = excluded.at").bind(JSON.stringify(names), now).run();
+      return json({ success: true, count: names.length });
+    }
+
     case "poll": {
       await ensurePayloadColumn(DB);
       // forget old short-lived commands, then take what is waiting (one server takes each command)
@@ -118,7 +130,8 @@ export async function handle(context) {
       ).bind(now, now - CLAIM_TIMEOUT).all()).results || [];
       return json({
         success: true,
-        pollIn: POLL_SECONDS,
+        pollIn: await pollInterval(DB, now),
+        refresh: await wantedRefreshes(DB, now),
         commands: rows.map((r) => ({
           id: r.id, type: r.type, userId: r.user_id, username: r.username, reason: r.reason,
           durationSeconds: r.duration_secs || 0, by: r.created_by_name, ...editFields(r.payload)

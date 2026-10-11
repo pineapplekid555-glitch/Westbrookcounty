@@ -6,13 +6,13 @@
 //   {action:"announce", message}                     a message to every server
 //   {action:"note", user, notes}                     internal note (any staff member)
 //   ADMIN ONLY (whatever MOD_ACTION_LEVEL is):
-//   {action:"removexp", user, pool:"police"|"fire"|"dot", amount, reason}   {action:"removemoney", user, amount, reason}   {action:"removevehicle", user, vehicle, reason}
+//   {action:"removexp"|"givexp", user, pool:"police"|"fire"|"dot", amount, reason}   {action:"removemoney"|"givemoney", user, amount, reason}   {action:"removevehicle"|"givevehicle", user, vehicle, reason}
 //   {action:"review", id}                            mark an anti-cheat ban as checked
 //   {action:"cancel", queueId}                       withdraw a command the game has not picked up yet
 // Allowed for the level in MOD_ACTION_LEVEL (default manager). Ids in MOD_PROTECTED_USER_IDS can never be banned or kicked here.
 import { requireStaff, audit, nowSec, LEVEL, readBody } from "../../../_lib/staffAuth.js";
 import { json, clean } from "../../../_lib/common.js";
-import { actLevel, protectedIds, findTarget, recordAction, rememberName, ensurePayloadColumn, MAX_BAN_SECONDS, EDIT_TYPES, XP_POOLS } from "../../../_lib/moderation.js";
+import { getCatalog, actLevel, protectedIds, findTarget, recordAction, rememberName, ensurePayloadColumn, MAX_BAN_SECONDS, EDIT_TYPES, XP_POOLS } from "../../../_lib/moderation.js";
 
 const bad = (msg, status = 400) => json({ success: false, error: msg }, status);
 
@@ -26,7 +26,7 @@ export async function onRequestPost(context) {
   const action = String(b.action || "");
   const now = nowSec();
 
-  if (EDIT_TYPES.includes(action) && user.level < LEVEL.admin) return bad("Only admins can remove XP, money or vehicles.", 403);
+  if (EDIT_TYPES.includes(action) && user.level < LEVEL.admin) return bad("Only admins can change a player's XP, money or vehicles.", 403);
   if (action !== "note" && user.level < actLevel(context.env)) return bad("You do not have permission to do this.", 403);
 
   const queue = (type, t, reason, durationSecs, actionId) =>
@@ -84,19 +84,26 @@ export async function onRequestPost(context) {
 
   if (EDIT_TYPES.includes(action)) {
     let payload, what;
-    if (action === "removexp") {
+    const verb = action.startsWith("give") ? "Gave" : "Removed";
+    const kind = action.replace(/^(give|remove)/, "");
+    if (kind === "xp") {
       const amount = Number.parseInt(b.amount, 10);
       if (!Object.prototype.hasOwnProperty.call(XP_POOLS, b.pool)) return bad("Pick Police, Fire or DOT.");
       if (!Number.isInteger(amount) || amount < 1 || amount > 1e9) return bad("Enter an amount of 1 or more.");
-      payload = { pool: b.pool, amount }; what = `Removed ${amount.toLocaleString("en-GB")} ${XP_POOLS[b.pool]}`;
-    } else if (action === "removemoney") {
+      payload = { pool: b.pool, amount }; what = `${verb} ${amount.toLocaleString("en-GB")} ${XP_POOLS[b.pool]}`;
+    } else if (kind === "money") {
       const amount = Number.parseInt(b.amount, 10);
       if (!Number.isInteger(amount) || amount < 1 || amount > 1e12) return bad("Enter an amount of 1 or more.");
-      payload = { amount }; what = `Removed $${amount.toLocaleString("en-GB")}`;
+      payload = { amount }; what = `${verb} $${amount.toLocaleString("en-GB")}`;
     } else {
       const vehicle = clean(b.vehicle, 80);
       if (!vehicle) return bad("Pick a vehicle.");
-      payload = { vehicle }; what = `Removed vehicle: ${vehicle}`;
+      if (action === "givevehicle") {
+        const catalog = await getCatalog(DB);
+        if (!catalog.length) return bad("The game has not sent its vehicle list yet. Try again in a minute after a server has started.");
+        if (!catalog.includes(vehicle)) return bad("That vehicle does not exist in the game.");
+      }
+      payload = { vehicle }; what = `${verb} vehicle: ${vehicle}`;
     }
     await ensurePayloadColumn(DB);
     const id = await recordAction(DB, { userId: target.userId, username: target.username, type: action, reason, notes: what, byId: user.id, byName: user.name }, now);

@@ -74,5 +74,11 @@ Who can **ban, unban, kick, warn and message all servers** is set with the Cloud
 4. Publish the game. Players appear on the Look up tab after they join.
 
 Anti-cheat bans (from the existing anti-cheat report) show up automatically on the **Anti-cheat bans** tab with the AI's second opinion.
-Website commands reach the game within about 10 seconds and the **Activity** tab shows whether the game carried them out.
+Website commands reach the game within about 5 to 10 seconds (every 5 seconds while staff have the Moderation page open, otherwise every 20) and the **Activity** tab shows whether the game carried them out.
+
+**Admins only** (whatever `MOD_ACTION_LEVEL` is): on a player's profile, give or take XP, money and vehicles. Online players change instantly; offline players are changed in their saved data (offline money can only be given if the player already has a saved balance). The vehicle list comes from the game about 30 seconds after a server starts, so re-publish the game with the new Vehicle Spawner functions (`giveOwnedVehicle`, `getAllVehicleNames`) before using "Give vehicle".
+
+The Moderation page refreshes itself every 8 seconds. While a profile is open the game sends fresh money and XP for that player straight away (no more than once every 5 seconds), so the numbers stay live without extra load.
+
+Anti-cheat auto-bans: if the game reports the same player several times, only the first within 15 minutes is logged, reviewed and sent to Discord.
 Bans use Roblox's own ban system, so they work in every server and for offline players.

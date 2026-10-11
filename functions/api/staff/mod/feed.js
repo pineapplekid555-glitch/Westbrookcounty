@@ -5,7 +5,7 @@
 //   queue    commands sent from the website to the game and whether the game carried them out
 import { requireStaff, nowSec, LEVEL } from "../../../_lib/staffAuth.js";
 import { json } from "../../../_lib/common.js";
-import { shapeAction, actLevel } from "../../../_lib/moderation.js";
+import { shapeAction, actLevel, touchStaff } from "../../../_lib/moderation.js";
 
 export async function onRequestGet(context) {
   const auth = await requireStaff(context, LEVEL.staff);
@@ -13,6 +13,7 @@ export async function onRequestGet(context) {
   const { DB, user } = auth;
   const view = new URL(context.request.url).searchParams.get("view") || "auto";
   const now = nowSec();
+  await touchStaff(DB, null, now);
   const canAct = user.level >= actLevel(context.env);
   const q = async (sql, ...b) => (await DB.prepare(sql).bind(...b).all()).results || [];
 
