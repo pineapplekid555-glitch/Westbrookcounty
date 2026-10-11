@@ -1,7 +1,7 @@
 import { json, checkAuth, readJson, clean, HttpError } from "../common.js";
 import { getDB, nowSec } from "../staffAuth.js";
 import {
-  cleanProfile, savePlayer, rememberName, recordAction, ACTION_TYPES, MAX_BAN_SECONDS, CLAIM_TIMEOUT, SHORT_LIVED, POLL_SECONDS
+  cleanProfile, savePlayer, rememberName, recordAction, ACTION_TYPES, EDIT_TYPES, ensurePayloadColumn, MAX_BAN_SECONDS, CLAIM_TIMEOUT, SHORT_LIVED, POLL_SECONDS
 } from "../moderation.js";
 
 // POST /api/p/moderation/<PRIVATE_API_PATH>   (also /api/moderation/game while PRIVATE_API_PATH is unset)
@@ -11,6 +11,32 @@ import {
 //   { action: "event",   type: "ban"|"unban"|"kick"|"warn", userId, username, reason, durationSeconds?, by? }   (something the GAME did itself)
 //   { action: "poll" }                        -> staff commands waiting to be carried out
 //   { action: "ack", id, ok, result? }        -> the command was carried out (or failed)
+
+const editFields = (payload) => {
+  try {
+    const p = JSON.parse(payload || "{}");
+    return { pool: typeof p.pool === "string" ? p.pool : undefined, amount: Number.isFinite(p.amount) ? p.amount : undefined, vehicle: typeof p.vehicle === "string" ? p.vehicle : undefined };
+  } catch { return {}; }
+};
+
+// Once the game says a removal worked, show the new numbers on the profile straight away.
+async function applyEditToProfile(DB, q) {
+  const p = editFields(q.payload);
+  const uid = q.user_id;
+  if (q.type === "removexp" && ["police", "fire", "dot"].includes(p.pool) && p.amount > 0) {
+    const col = { police: "xp_police", fire: "xp_fire", dot: "xp_dot" }[p.pool];
+    await DB.prepare(`UPDATE mod_players SET ${col} = MAX(0, COALESCE(${col}, 0) - ?1) WHERE user_id = ?2`).bind(p.amount, uid).run();
+  } else if (q.type === "removemoney" && p.amount > 0) {
+    await DB.prepare("UPDATE mod_players SET money = MAX(0, COALESCE(money, 0) - ?1) WHERE user_id = ?2").bind(p.amount, uid).run();
+  } else if (q.type === "removevehicle" && p.vehicle) {
+    const row = await DB.prepare("SELECT vehicles FROM mod_players WHERE user_id = ?1").bind(uid).first();
+    if (row) {
+      let list = [];
+      try { list = JSON.parse(row.vehicles); } catch { /* ignore */ }
+      await DB.prepare("UPDATE mod_players SET vehicles = ?1 WHERE user_id = ?2").bind(JSON.stringify(list.filter((v) => v !== p.vehicle)), uid).run();
+    }
+  }
+}
 
 export async function handle(context) {
   const denied = checkAuth(context.request, context.env);
@@ -81,20 +107,21 @@ export async function handle(context) {
     }
 
     case "poll": {
+      await ensurePayloadColumn(DB);
       // forget old short-lived commands, then take what is waiting (one server takes each command)
       await DB.prepare("UPDATE mod_queue SET status = 'expired', done_at = ?1 WHERE status IN ('pending','claimed') AND type IN ('kick','warn','announce') AND created_at < ?2").bind(now, now - SHORT_LIVED).run();
       await DB.prepare("UPDATE mod_queue SET status = 'expired', done_at = ?1 WHERE status IN ('pending','claimed') AND created_at < ?2").bind(now, now - 86400).run();
       const rows = (await DB.prepare(
         `UPDATE mod_queue SET status = 'claimed', claimed_at = ?1
           WHERE id IN (SELECT id FROM mod_queue WHERE status = 'pending' OR (status = 'claimed' AND claimed_at < ?2) ORDER BY id LIMIT 20)
-          RETURNING id, type, user_id, username, reason, duration_secs, created_by_name`
+          RETURNING id, type, user_id, username, reason, duration_secs, created_by_name, payload`
       ).bind(now, now - CLAIM_TIMEOUT).all()).results || [];
       return json({
         success: true,
         pollIn: POLL_SECONDS,
         commands: rows.map((r) => ({
           id: r.id, type: r.type, userId: r.user_id, username: r.username, reason: r.reason,
-          durationSeconds: r.duration_secs || 0, by: r.created_by_name
+          durationSeconds: r.duration_secs || 0, by: r.created_by_name, ...editFields(r.payload)
         })).filter((c) => ACTION_TYPES.includes(c.type))
       });
     }
@@ -107,6 +134,7 @@ export async function handle(context) {
       const q = await DB.prepare("SELECT * FROM mod_queue WHERE id = ?1").bind(id).first();
       if (!q) return json({ success: false, error: "unknown_command" }, 404);
       await DB.prepare("UPDATE mod_queue SET status = ?1, done_at = ?2, result = ?3 WHERE id = ?4").bind(ok ? "done" : "failed", now, result, id).run();
+      if (ok && EDIT_TYPES.includes(q.type)) await applyEditToProfile(DB, q);
       if (!ok && q.type === "ban" && q.action_id) {
         await DB.prepare("UPDATE mod_actions SET active = 0, notes = substr(notes || ' [game could not apply the ban: ' || ?1 || ']', 1, 400) WHERE id = ?2").bind(result, q.action_id).run();
       }

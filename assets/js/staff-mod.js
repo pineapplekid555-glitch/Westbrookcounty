@@ -126,6 +126,8 @@
             else passes.appendChild(h("div", { class: "sp-tags" }, p.gamepasses.map(function (v) { return h("span", { class: "sp-tag", text: v }); })));
             box.appendChild(passes);
 
+            if (me && me.level >= 3) box.appendChild(removeCard(p));
+
             var keys = Object.keys(p.extra || {});
             if (keys.length) {
                 var more = h("div", { class: "sp-card" }, h("h3", { text: "More" }));
@@ -148,8 +150,34 @@
         }).catch(fail);
     }
 
+    // admin only: take XP, money or a vehicle away (the server checks this again)
+    function removeCard(p) {
+        var card = h("div", { class: "sp-card" }, h("h3", { text: "Remove from player (admins only)" }),
+            h("div", { class: "sp-meta", text: "The game does it within about 10 seconds. Online players are updated live; offline players are changed in the saved data." }));
+        var reason = h("input", { type: "text", maxlength: "300", placeholder: "Reason (required, saved in the history)", "aria-label": "Reason" });
+        card.appendChild(h("label", { text: "Reason" })); card.appendChild(reason);
+        function send(body, label, btn) {
+            if (!confirm(label + " for " + (p.username || p.userId) + "?")) return;
+            body.user = String(p.userId); body.reason = reason.value;
+            busy(btn, function () { return api("/api/staff/mod/action", body).then(function () { say("Sent. The game will do it within about 10 seconds.", "good"); reason.value = ""; }); });
+        }
+        var pool = h("select", { "aria-label": "Department" }, h("option", { value: "police", text: "Police / Sheriff XP" }), h("option", { value: "fire", text: "Fire XP" }), h("option", { value: "dot", text: "DOT XP" }));
+        var xp = h("input", { type: "number", min: "1", step: "1", placeholder: "Amount", "aria-label": "XP to remove" });
+        card.appendChild(h("div", { class: "sp-inline", style: "margin-top:12px" }, pool, xp, h("button", { type: "button", class: "sp-btn bad sm", text: "Remove XP", onclick: function (e) {
+            send({ action: "removexp", pool: pool.value, amount: xp.value }, "Remove " + xp.value + " " + pool.options[pool.selectedIndex].text, e.target); } })));
+        var cash = h("input", { type: "number", min: "1", step: "1", placeholder: "Amount in $", "aria-label": "Money to remove" });
+        card.appendChild(h("div", { class: "sp-inline", style: "margin-top:12px" }, cash, h("button", { type: "button", class: "sp-btn bad sm", text: "Remove money", onclick: function (e) {
+            send({ action: "removemoney", amount: cash.value }, "Remove $" + cash.value, e.target); } })));
+        var veh = h("select", { "aria-label": "Vehicle" });
+        p.vehicles.forEach(function (v) { veh.appendChild(h("option", { value: v, text: v })); });
+        if (p.vehicles.length) card.appendChild(h("div", { class: "sp-inline", style: "margin-top:12px" }, veh, h("button", { type: "button", class: "sp-btn bad sm", text: "Remove vehicle", onclick: function (e) {
+            send({ action: "removevehicle", vehicle: veh.value }, "Remove the vehicle " + veh.value, e.target); } })));
+        else card.appendChild(h("div", { class: "sp-meta", style: "margin-top:12px", text: "No vehicles recorded for this player." }));
+        return card;
+    }
+
     function actionItem(a, showName) {
-        var cls = a.type === "ban" ? (a.active ? "bad" : "warn") : a.type === "unban" ? "ok" : "";
+        var cls = a.type === "ban" ? (a.active ? "bad" : "warn") : a.type === "unban" ? "ok" : a.type.indexOf("remove") === 0 ? "warn" : "";
         var title = h("div", null, h("span", { class: "sp-pill " + cls, text: a.type }), " ",
             h("strong", { text: (showName ? (a.username || a.userId) + " · " : "") + (a.type === "ban" ? length(a) : "") }),
             a.type === "ban" && a.active ? h("span", { class: "sp-pill bad", text: " active" }) : null);

@@ -8,7 +8,18 @@
 import { clean } from "./common.js";
 import { LEVEL, nowSec } from "./staffAuth.js";
 
-export const ACTION_TYPES = ["ban", "unban", "kick", "warn", "announce"];
+export const ACTION_TYPES = ["ban", "unban", "kick", "warn", "announce", "removexp", "removemoney", "removevehicle"];
+export const EDIT_TYPES = ["removexp", "removemoney", "removevehicle"]; // admin only: take things away from a player
+export const XP_POOLS = { police: "Police / Sheriff XP", fire: "Fire XP", dot: "DOT XP" };
+
+// Older databases were created without mod_queue.payload. Add it the first time it is needed (safe to run repeatedly).
+let payloadChecked = false;
+export async function ensurePayloadColumn(DB) {
+  if (payloadChecked) return;
+  try { await DB.prepare("SELECT payload FROM mod_queue LIMIT 1").first(); }
+  catch { try { await DB.prepare("ALTER TABLE mod_queue ADD COLUMN payload TEXT NOT NULL DEFAULT ''").run(); } catch { /* already there */ } }
+  payloadChecked = true;
+}
 export const MAX_BAN_SECONDS = 365 * 86400;
 export const CLAIM_TIMEOUT = 60; // a command a game server took but never confirmed is offered again after this
 export const SHORT_LIVED = 10 * 60; // kicks, warnings and announcements are dropped if nobody picked them up in time

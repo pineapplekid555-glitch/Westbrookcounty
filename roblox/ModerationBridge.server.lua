@@ -18,6 +18,7 @@ local SSS = game:GetService("ServerScriptService")
 local DataStoreService = game:GetService("DataStoreService")
 local MessagingService = game:GetService("MessagingService")
 local RunService = game:GetService("RunService")
+local MemoryStoreService = game:GetService("MemoryStoreService")
 
 if RunService:IsStudio() then
 	print("[ModerationBridge] Studio: switched off here so test sessions don't take real staff commands.")
@@ -33,6 +34,8 @@ local seenStore = DataStoreService:GetDataStore("WestbrookModSeen")
 local banStore = DataStoreService:GetDataStore("AdminBanList") -- the same list Adminhandler uses
 local BAN_INDEX_KEY = "BanIndex"
 local joinedAt = {}
+local onlineMap = MemoryStoreService:GetHashMap("WestbrookOnline") -- which server a player is in
+local REMOTE = {} -- marker: another server will carry out (and confirm) this command
 
 local function call(body)
 	local data, err = WestbrookAPI.post(PATH, body)
@@ -140,26 +143,34 @@ local function sendProfile(player, leaving)
 	})
 end
 
+local function register(player)
+	pcall(function() onlineMap:SetAsync(tostring(player.UserId), game.JobId, 600) end)
+end
+
 Players.PlayerAdded:Connect(function(player)
 	joinedAt[player] = os.time()
+	task.spawn(register, player)
 	task.delay(20, function() -- give XP / vehicles time to load first
 		if player.Parent then sendProfile(player, false) end
 	end)
 end)
 Players.PlayerRemoving:Connect(function(player)
 	task.spawn(function()
+		pcall(function() onlineMap:RemoveAsync(tostring(player.UserId)) end)
 		sendProfile(player, true)
 		joinedAt[player] = nil
 	end)
 end)
 for _, player in ipairs(Players:GetPlayers()) do
 	joinedAt[player] = os.time()
+	task.spawn(register, player)
 	task.delay(20, function() if player.Parent then sendProfile(player, false) end end)
 end
 task.spawn(function() -- keep money and XP fresh while people play
 	while true do
 		task.wait(300)
 		for _, player in ipairs(Players:GetPlayers()) do
+			register(player)
 			sendProfile(player, false)
 			task.wait(2)
 		end
@@ -247,8 +258,153 @@ local function runLocal(msg)
 	end
 end
 
+-- ---------------------------------------------------------------- admin: take XP, money, vehicles
+local function findKey(tbl, key, depth)
+	depth = depth or 0
+	if type(tbl) ~= "table" or depth > 4 then return nil end
+	if tbl[key] ~= nil then return tbl[key] end
+	for _, v in pairs(tbl) do
+		local found = findKey(v, key, depth + 1)
+		if found ~= nil then return found end
+	end
+	return nil
+end
+
+local function storeFor(modulePath, key)
+	local cfg = require(modulePath)
+	local name = findKey(cfg, key)
+	assert(type(name) == "string", "could not find " .. key)
+	return DataStoreService:GetDataStore(name)
+end
+
+-- the player is in THIS server
+local function editOnline(player, cmd)
+	if cmd.type == "removexp" then
+		local RankXP = require(RS.framework.Systems["Rank & XP System"].Core.Server)
+		local pool = POOLS[cmd.pool]
+		assert(pool, "unknown department")
+		local take = math.min(cmd.amount, RankXP.getPlayerPoolXP(player, pool))
+		assert(take > 0, "the player has no XP in that department")
+		RankXP.addXP(player, pool, -take, "Removed by staff")
+		return "removed " .. take .. " XP"
+	elseif cmd.type == "removemoney" then
+		local stats = player:FindFirstChild("leaderstats") or player:FindFirstChild("Leaderstats")
+		local values = {}
+		for _, name in ipairs({ "Wallet", "Bank" }) do
+			local v = stats and stats:FindFirstChild(name)
+			if v then table.insert(values, v) end
+		end
+		assert(#values > 0, "no money values found on the player")
+		local left = cmd.amount
+		for _, v in ipairs(values) do
+			local take = math.min(v.Value, left)
+			v.Value -= take
+			left -= take
+		end
+		assert(left < cmd.amount, "the player has no money")
+		return "removed $" .. (cmd.amount - left)
+	elseif cmd.type == "removevehicle" then
+		local VS = require(RS.framework.Systems["Vehicle Spawner"].Core.Server)
+		assert(VS.removeOwnedVehicle, "Vehicle Spawner is missing removeOwnedVehicle")
+		assert(VS.removeOwnedVehicle(player, cmd.vehicle), "the player does not own that vehicle")
+		return "removed " .. cmd.vehicle
+	end
+	error("unknown edit")
+end
+
+-- nobody is playing as that player right now: change the saved data
+local function editOffline(cmd)
+	local key = tostring(cmd.userId)
+	if cmd.type == "removexp" then
+		local store = storeFor(RS.framework.Systems["Rank & XP System"].Config, "datastoreKey")
+		local pool = POOLS[cmd.pool]
+		assert(pool, "unknown department")
+		local took = 0
+		store:UpdateAsync(key, function(old)
+			took = 0
+			if type(old) ~= "table" then return nil end
+			took = math.min(cmd.amount, old[pool] or 0)
+			if took <= 0 then return nil end
+			old[pool] = (old[pool] or 0) - took
+			return old
+		end)
+		assert(took > 0, "the player has no XP in that department")
+		return "removed " .. took .. " XP (offline)"
+	elseif cmd.type == "removemoney" then
+		local store = DataStoreService:GetDataStore("PlayerEconomyData")
+		local left = cmd.amount
+		store:UpdateAsync(key, function(old)
+			left = cmd.amount -- (this function can run more than once)
+			if type(old) ~= "table" then return nil end
+			for _, field in ipairs({ "wallet", "bank" }) do
+				local have = tonumber(old[field]) or 0
+				local take = math.min(have, left)
+				if take > 0 then
+					old[field] = have - take
+					left -= take
+				end
+			end
+			if left >= cmd.amount then return nil end
+			return old
+		end)
+		assert(left < cmd.amount, "the player has no money")
+		return "removed $" .. (cmd.amount - left) .. " (offline)"
+	elseif cmd.type == "removevehicle" then
+		local store = storeFor(RS.framework.Systems["Vehicle Spawner"].Config, "datastoreVehicleKey")
+		local removed = false
+		store:UpdateAsync(key, function(old)
+			removed = false
+			if type(old) ~= "table" or old[cmd.vehicle] == nil then return nil end
+			old[cmd.vehicle] = nil
+			removed = true
+			return old
+		end)
+		assert(removed, "the player does not own that vehicle")
+		return "removed " .. cmd.vehicle .. " (offline)"
+	end
+	error("unknown edit")
+end
+
+local function ack(cmd, ok, result)
+	call({ action = "ack", id = cmd.id, ok = ok, result = tostring(result) })
+end
+
+local function applyEdit(cmd)
+	local p = Players:GetPlayerByUserId(cmd.userId)
+	if p then return editOnline(p, cmd) end
+	local ok, job = pcall(function() return onlineMap:GetAsync(tostring(cmd.userId)) end)
+	assert(ok, "could not check which server the player is in")
+	if job and job ~= game.JobId then
+		-- they are in another server: ask that server to do it (it confirms to the website itself)
+		local sent = pcall(function()
+			MessagingService:PublishAsync(TOPIC, { type = "edit", jobId = job, cmd = {
+				id = cmd.id, type = cmd.type, userId = cmd.userId, pool = cmd.pool, amount = cmd.amount, vehicle = cmd.vehicle,
+			} })
+		end)
+		assert(sent, "could not reach the server the player is in")
+		return REMOTE
+	end
+	return editOffline(cmd)
+end
+
+local function handleRemoteEdit(cmd)
+	local p = Players:GetPlayerByUserId(cmd.userId)
+	local ok, result = pcall(function()
+		if p then return editOnline(p, cmd) end
+		return editOffline(cmd) -- they left in the meantime
+	end)
+	ack(cmd, ok, result)
+end
+
 pcall(function()
-	MessagingService:SubscribeAsync(TOPIC, function(message) runLocal(message.Data) end)
+	MessagingService:SubscribeAsync(TOPIC, function(message)
+		local d = message.Data
+		if d.type == "edit" then
+			if d.jobId == game.JobId then task.spawn(handleRemoteEdit, d.cmd) end
+		else
+			runLocal(d)
+		end
+	end)
 end)
 
 local function broadcast(type_, userId, reason)
@@ -288,6 +444,8 @@ local function execute(cmd)
 			return old
 		end)
 		return "unbanned"
+	elseif cmd.type == "removexp" or cmd.type == "removemoney" or cmd.type == "removevehicle" then
+		return applyEdit(cmd)
 	else
 		broadcast(cmd.type, cmd.userId, cmd.reason)
 		return "sent to all servers"
@@ -299,7 +457,7 @@ local function poll()
 	if not reply or not reply.commands then return end
 	for _, cmd in ipairs(reply.commands) do
 		local ok, result = pcall(execute, cmd)
-		call({ action = "ack", id = cmd.id, ok = ok, result = tostring(result) })
+		if not (ok and result == REMOTE) then ack(cmd, ok, result) end
 	end
 end
 
