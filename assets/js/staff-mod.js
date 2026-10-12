@@ -131,6 +131,7 @@
             box.appendChild(robloxCard(d.roblox, p));
             box.appendChild(botCard(p, d));
             box.appendChild(linksCard(p, d));
+            box.appendChild(serversCard(d.servers || []));
 
             var vehicles = h("div", { class: "sp-card" }, h("h3", { text: "Vehicles owned (" + p.vehicles.length + ")" }));
             if (!p.vehicles.length) vehicles.appendChild(empty("None recorded."));
@@ -221,6 +222,20 @@
             say(doneText + (r.alsoBanned && r.alsoBanned.length ? " Also banned: " + r.alsoBanned.map(function (x) { return x.username || x.userId; }).join(", ") + "." : ""), "good");
             openProfile(p.userId, true, true);
         });
+    }
+    function serversCard(list) {
+        var card = h("div", { class: "sp-card" }, h("h3", { text: "Private servers (" + list.length + ")" }));
+        if (!list.length) { card.appendChild(empty("No private servers registered by this player. A server appears here once its owner generates a Server API key.")); return card; }
+        list.forEach(function (s) {
+            var row = h("div", { class: "sp-item" },
+                h("strong", { text: s.name || "Unnamed server" }), " ",
+                h("span", { class: "sp-pill " + (s.online ? "ok" : ""), text: s.online ? "online" : "offline" }), " ",
+                h("span", { class: "sp-meta", text: s.players != null ? s.players + "/" + s.maxPlayers + " players" : "no report yet" }));
+            row.appendChild(h("div", null, "Join code: ", s.joinKey ? h("code", { text: s.joinKey }) : h("span", { class: "sp-meta", text: "not reported yet (the server has to run once with the Server API on)" })));
+            row.appendChild(h("div", { class: "sp-meta", text: "Last report: " + (s.updatedAt ? when(s.updatedAt) : "never") + " · private server id " + s.id }));
+            card.appendChild(row);
+        });
+        return card;
     }
     function linksCard(p, d) {
         var L = d.links || { alts: [] }, card = h("div", { class: "sp-card" }, h("h3", { text: "Linked accounts" }));

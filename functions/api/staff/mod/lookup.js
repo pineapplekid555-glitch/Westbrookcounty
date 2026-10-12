@@ -42,9 +42,32 @@ export async function onRequestGet(context) {
       if (lid === group.main) links.main = entry; else links.alts.push(entry);
     }
     const related = (await similarAccounts(DB, uid, player?.username || roblox?.username)).filter((x) => !group.ids.includes(x.userId));
+    // private servers this player owns (registered when the owner makes a Server API key) with the join code from the last report
+    let servers = [];
+    try {
+      const SDB = context.env.SERVER_API_DB || DB;
+      const rows = (await SDB.prepare(
+        "SELECT k.private_server_id, k.server_name, k.created_at, s.snapshot, s.updated_at FROM server_api_keys k LEFT JOIN server_api_state s ON s.private_server_id = k.private_server_id WHERE k.owner_id = ?1 ORDER BY k.created_at DESC LIMIT 10"
+      ).bind(uid).all()).results || [];
+      servers = rows.map((r) => {
+        let snap = null;
+        try { snap = r.snapshot ? JSON.parse(r.snapshot) : null; } catch { snap = null; }
+        const sv = (snap && snap.server) || {};
+        return {
+          id: r.private_server_id,
+          name: sv.name || r.server_name || "",
+          joinKey: sv.joinKey || "",
+          players: sv.currentPlayers ?? null,
+          maxPlayers: sv.maxPlayers ?? null,
+          online: !!r.updated_at && now - r.updated_at < 300,
+          updatedAt: r.updated_at || null,
+          registeredAt: r.created_at
+        };
+      });
+    } catch { servers = []; }
     return json({
       success: true,
-      roblox, links, related,
+      roblox, links, related, servers,
       assessment: await readCached(DB, uid),
       player,
       activeBan: actions.find((a) => isActiveBan(a, now)) ? shapeAction(actions.find((a) => isActiveBan(a, now)), now) : null,
