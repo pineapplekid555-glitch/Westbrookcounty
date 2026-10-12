@@ -16,7 +16,7 @@ import {
 const editFields = (payload) => {
   try {
     const p = JSON.parse(payload || "{}");
-    return { pool: typeof p.pool === "string" ? p.pool : undefined, amount: Number.isFinite(p.amount) ? p.amount : undefined, vehicle: typeof p.vehicle === "string" ? p.vehicle : undefined };
+    return { pool: typeof p.pool === "string" ? p.pool : undefined, amount: Number.isFinite(p.amount) ? p.amount : undefined, vehicle: typeof p.vehicle === "string" ? p.vehicle : undefined, alts: typeof p.alts === "boolean" ? p.alts : undefined };
   } catch { return {}; }
 };
 

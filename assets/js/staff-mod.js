@@ -354,6 +354,7 @@
     function syncForm() {
         var t = $("a-type").value;
         $("a-len-row").hidden = t !== "ban";
+        $("a-alts-row").hidden = t !== "ban";
         $("a-notes-row").hidden = t !== "ban";
         $("a-reason-l").textContent = t === "note" ? "Note" : t === "unban" ? "Reason (optional)" : t === "warn" ? "Warning (the player sees this)" : "Reason (the player sees this)";
         $("a-go").textContent = { ban: "Ban", unban: "Unban", kick: "Kick", warn: "Send warning", note: "Save note" }[t];
@@ -381,8 +382,8 @@
     $("a-go").addEventListener("click", function (e) {
         var t = $("a-type").value, user = $("a-user").value.trim();
         var label = { ban: "Ban", unban: "Unban", kick: "Kick", warn: "Warn", note: "Add a note for" }[t];
-        if (t !== "note" && !confirm(label + " " + user + "?" + (t === "ban" ? "\n\nAny accounts linked to it as alts or main will be banned too." : ""))) return;
-        var body = { action: t, user: user, reason: $("a-reason").value, notes: t === "note" ? $("a-reason").value : $("a-notes").value, days: Number($("a-days").value) };
+        if (t !== "note" && !confirm(label + " " + user + "?" + (t === "ban" ? "\n\nAccounts linked to it as alts or main will be banned too." + ($("a-alts").checked ? " Roblox will also ban any alt accounts it detects." : "") : ""))) return;
+        var body = { action: t, user: user, reason: $("a-reason").value, notes: t === "note" ? $("a-reason").value : $("a-notes").value, days: Number($("a-days").value), alts: $("a-alts").checked };
         busy(e.target, function () {
             return api("/api/staff/mod/action", body).then(function (r) {
                 $("a-reason").value = ""; $("a-notes").value = "";

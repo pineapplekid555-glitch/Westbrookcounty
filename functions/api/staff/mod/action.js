@@ -1,5 +1,5 @@
 // POST /api/staff/mod/action  - moderators act on players. Everything is logged and sent to the game through a queue.
-//   {action:"ban", user, reason, notes?, days}      user = Roblox user id or username. days 0 = permanent, otherwise 1 to 365
+//   {action:"ban", user, reason, notes?, days, alts?}   alts:false skips Roblox's alt-account ban      user = Roblox user id or username. days 0 = permanent, otherwise 1 to 365
 //   {action:"unban", user, reason?}
 //   {action:"kick", user, reason}
 //   {action:"warn", user, reason}                    the player sees the message in game
@@ -155,7 +155,11 @@ export async function onRequestPost(context) {
     if (already) return bad("That player is already banned. Unban them first to change the ban.", 409);
     const secs = days * 86400;
     const id = await recordAction(DB, { userId: target.userId, username: target.username, type: "ban", reason, notes: clean(b.notes, 300), byId: user.id, byName: user.name, durationSecs: secs }, now);
-    const q = await queue("ban", target, reason, secs, id);
+    // alts: also ban the accounts Roblox itself detects as alts (Roblox's Ban API), like ER:LC. On unless staff untick it.
+    await ensurePayloadColumn(DB);
+    const q = await DB.prepare(
+      "INSERT INTO mod_queue (type, user_id, username, reason, duration_secs, created_by_id, created_by_name, created_at, action_id, payload) VALUES ('ban', ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9) RETURNING id"
+    ).bind(target.userId, target.username || "", reason, secs || null, user.id, user.name, now, id, JSON.stringify({ alts: b.alts !== false })).first();
     const alsoBanned = await cascadeBan(DB, context.env, { userId: target.userId, username: target.username, reason, durationSecs: secs, byId: user.id, byName: user.name }, now);
     await audit(context.env, user, "mod.ban", `${label}: ${reason} (${days ? days + "d" : "permanent"})` + (alsoBanned.length ? ` (also banned linked: ${alsoBanned.map((x) => x.username || x.userId).join(", ")})` : ""));
     return json({ success: true, id, queueId: q?.id, alsoBanned });
