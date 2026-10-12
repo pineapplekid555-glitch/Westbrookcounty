@@ -3,7 +3,7 @@ import { isConfigured, randomHex, cookie, STATE_COOKIE } from "../../_lib/staffA
 
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
-  if (!isConfigured(env)) return Response.redirect(url.origin + "/pages/staff.html?e=setup", 302);
+  if (!isConfigured(env)) return Response.redirect(url.origin + "/staff?e=setup", 302);
 
   const state = randomHex(16);
   const auth = new URL("https://discord.com/oauth2/authorize");

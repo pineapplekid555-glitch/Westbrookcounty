@@ -1,0 +1,13 @@
+# Old /pages/... addresses still work and go to the short ones.
+/pages/updates.html /updates 301
+/pages/updates /updates 301
+/pages/liveries.html /liveries 301
+/pages/liveries /liveries 301
+/pages/server-api.html /server-api 301
+/pages/server-api /server-api 301
+/pages/staff.html /staff 301
+/pages/staff /staff 301
+/pages/staff-admin.html /staff-admin 301
+/pages/staff-admin /staff-admin 301
+/pages/staff-mod.html /staff-mod 301
+/pages/staff-mod /staff-mod 301

@@ -89,9 +89,9 @@
             if (d.mine.activeStrikes) tiles.appendChild(tile(d.mine.activeStrikes, "My active strikes", "strikes", true));
             if (d.mine.pendingLoa) tiles.appendChild(tile(d.mine.pendingLoa, "My LOA waiting", "loa"));
             if (d.manager) {
-                if (d.manager.pendingLoa != null) tiles.appendChild(tile(d.manager.pendingLoa, "LOA to review", "/pages/staff-admin.html", d.manager.pendingLoa > 0));
+                if (d.manager.pendingLoa != null) tiles.appendChild(tile(d.manager.pendingLoa, "LOA to review", "/staff-admin", d.manager.pendingLoa > 0));
                 tiles.appendChild(tile(d.manager.openTasks, "Open tasks (all)", "tasks"));
-                if (d.manager.activeStrikes != null) tiles.appendChild(tile(d.manager.activeStrikes, "Active strikes (all)", "/pages/staff-admin.html"));
+                if (d.manager.activeStrikes != null) tiles.appendChild(tile(d.manager.activeStrikes, "Active strikes (all)", "/staff-admin"));
             }
             var live = tile("…", "Players in game");
             tiles.appendChild(live);

@@ -7,7 +7,7 @@ import {
 } from "../../_lib/staffAuth.js";
 
 const back = (origin, code, extraHeaders = {}) => {
-  const headers = new Headers({ location: `${origin}/pages/staff.html${code ? "?e=" + code : ""}`, "cache-control": "no-store" });
+  const headers = new Headers({ location: `${origin}/staff${code ? "?e=" + code : ""}`, "cache-control": "no-store" });
   headers.append("set-cookie", cookie(STATE_COOKIE, "", 0));
   for (const [k, v] of Object.entries(extraHeaders)) headers.append(k, v);
   return new Response(null, { status: 302, headers });

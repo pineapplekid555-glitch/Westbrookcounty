@@ -1,13 +1,13 @@
 # Staff portal - setup (about 15 minutes, one time)
 
-Page: `https://westbrookcounty.co.uk/pages/staff.html` (not linked anywhere on the site, and hidden from search engines).
+Page: `https://westbrookcounty.co.uk/staff` (not linked anywhere on the site, and hidden from search engines).
 Staff log in with Discord. Your Discord server's roles decide what each person can do. There are no passwords.
 
 | Level | Who | Can do |
 | --- | --- | --- |
 | staff | Members with a role in `STAFF_ROLE_IDS` | Dashboard, announcements, LOA requests, clock in/out, their own tasks and strikes, the roster |
 | manager | Members with a role in `MANAGER_ROLE_IDS` | Everything above, plus approve/deny LOA, post announcements, assign tasks, see weekly duty hours |
-| admin | Members with a role in `ADMIN_ROLE_IDS`, or listed in `STAFF_ADMIN_USER_IDS` | Everything above, plus set ranks and notes, and the **admin page** (`/pages/staff-admin.html`): setup check, suspend members, **strikes**, **tasks** (admin tasks can't be deleted by managers), end sessions, **activity log**, CSV exports, data tidy-up. Staff can see their own strikes (read-only) in the portal |
+| admin | Members with a role in `ADMIN_ROLE_IDS`, or listed in `STAFF_ADMIN_USER_IDS` | Everything above, plus set ranks and notes, and the **admin page** (`/staff-admin`): setup check, suspend members, **strikes**, **tasks** (admin tasks can't be deleted by managers), end sessions, **activity log**, CSV exports, data tidy-up. Staff can see their own strikes (read-only) in the portal |
 
 Everything is checked on the server for every request. Someone without the role gets nothing, even if they know the address.
 No staff data is stored in this public repo: it lives in Cloudflare D1.
@@ -52,7 +52,7 @@ A channel id on its own cannot post anything. Either use a webhook (simplest: Ch
 Roles are cumulative: put the manager and admin role ids in their own variables; you do not need to repeat them in `STAFF_ROLE_IDS`.
 
 ## 5. Try it
-Open `/pages/staff.html`, press **Log in with Discord**, approve, and you should land in the portal.
+Open `/staff`, press **Log in with Discord**, approve, and you should land in the portal.
 
 ## Good to know
 - A login lasts 8 hours. Role changes in Discord take effect the next time someone logs in.
@@ -62,7 +62,7 @@ Open `/pages/staff.html`, press **Log in with Discord**, approve, and you should
 - Staff appear in the roster the first time they log in.
 
 ## Moderation (look-ups, bans, anti-cheat bans on the website)
-Page: `/pages/staff-mod.html` (linked from the portal). Everyone on staff can **look players up** and **see anti-cheat bans**.
+Page: `/staff-mod` (linked from the portal). Everyone on staff can **look players up** and **see anti-cheat bans**.
 Who can **ban, unban, kick, warn and message all servers** is set with the Cloudflare variable `MOD_ACTION_LEVEL`
 (`1` = all staff, `2` = managers and admins - the default, `3` = admins only).
 

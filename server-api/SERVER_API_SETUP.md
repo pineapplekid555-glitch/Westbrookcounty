@@ -18,7 +18,7 @@ Copy the contents of this zip over your website repo (keep the folders), commit 
 - `functions/_lib/serverApi.js`, `functions/_lib/serverApiLogs.js`, `functions/_lib/handlers/serverApiGame.js`
 - `functions/api/v1/server.js` and `functions/api/v1/server/*.js` (public API)
 - `functions/api/p/server-api/[token].js` and `functions/api/server-api/index.js` (game -> website)
-- `pages/server-api.html` (public docs page), small nav-link edits in `index.html`, `pages/updates.html`, `pages/liveries.html`, and CSS at the end of `assets/css/styles.css`
+- `server-api.html` (public docs page), small nav-link edits in `index.html`, `updates.html`, `liveries.html`, and CSS at the end of `assets/css/styles.css`
 - `server-api/schema.sql`, this guide, and `server-api/examples/`
 
 ## 2. Create the D1 database (stores key hashes, the latest server snapshot, recent logs)
