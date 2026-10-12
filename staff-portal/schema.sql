@@ -20,3 +20,5 @@ CREATE TABLE IF NOT EXISTS mod_queue (id INTEGER PRIMARY KEY AUTOINCREMENT, type
 CREATE INDEX IF NOT EXISTS idx_mod_queue_status ON mod_queue (status, id);
 CREATE TABLE IF NOT EXISTS mod_links (alt_id INTEGER PRIMARY KEY, main_id INTEGER NOT NULL, linked_by TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_mod_links_main ON mod_links (main_id);
+CREATE TABLE IF NOT EXISTS mod_liveries (id INTEGER PRIMARY KEY AUTOINCREMENT, review_id TEXT NOT NULL DEFAULT '', game_id TEXT NOT NULL DEFAULT '', name TEXT NOT NULL DEFAULT '', vehicle TEXT NOT NULL DEFAULT '', user_id INTEGER, username TEXT NOT NULL DEFAULT '', slots TEXT NOT NULL DEFAULT '[]', ai_status TEXT NOT NULL DEFAULT '', ai_reason TEXT NOT NULL DEFAULT '', decision TEXT NOT NULL DEFAULT 'pending', decided_by TEXT NOT NULL DEFAULT '', decided_at INTEGER, decided_reason TEXT NOT NULL DEFAULT '', applied TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_mod_liveries_decision ON mod_liveries (decision, id);

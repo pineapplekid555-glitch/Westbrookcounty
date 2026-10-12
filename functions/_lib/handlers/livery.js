@@ -1,6 +1,8 @@
 import { json, checkAuth, readJson, clean, storeResult, HttpError } from "../common.js";
 import { askAI } from "../ai.js";
 import { buildLiveryPrompt } from "../guidelines.js";
+import { getDB } from "../staffAuth.js";
+import { recordFlagged } from "../liveries.js";
 
 // POST /api/livery/review
 // Called by the Roblox game server (LiveryModerationHandler) with:
@@ -123,9 +125,13 @@ export async function handle(context) {
     username: clean(body.submittedBy?.username, 50),
     slots
   };
+  const gameId = clean(body.liveryId, 80); // the game's own id for this livery (optional) so staff decisions can be sent back
 
   const finish = (status, reason, extra = {}) => {
     storeResult(context, "livery", reviewId, { ...meta, status, reason, ...extra, at: new Date().toISOString() });
+    // flagged liveries (rejected, or the AI could not decide) go to the staff website
+    const DB = getDB(context.env);
+    if (DB && status !== "approved") context.waitUntil(recordFlagged(DB, meta, status, reason, gameId).catch(() => {}));
     return json({ success: true, reviewId, status, reason, ...extra });
   };
 
